@@ -3,17 +3,91 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI Chess Arcade</title>
+    <title>AI Arcade Hub 🌸</title>
   </head>
   <body>
-    <h1>AI Chess Arcade 🌸</h1>
-    <div id="board" class="board-container blue merida"></div>
-    <div class="controls">
-      <button id="btnReset">Bắt đầu trận mới</button>
-      <button id="btnAuto">Cho AI tự đấu (Auto)</button>
+    <div id="app">
+      <div id="view-hub" class="view-container">
+        <h1>TRẠM GAME AI 🌸</h1>
+        <p class="subtitle">Chọn một trò chơi để bắt đầu</p>
+        <div class="game-grid">
+          <div class="game-card" id="card-chess">
+            <div class="game-icon">♟️</div>
+            <h2>AI Chess Battle</h2>
+            <p>Trí tuệ nhân tạo: Minimax vs Neural Network</p>
+          </div>
+          <div class="game-card" id="card-snake">
+            <div class="game-icon">🐍</div>
+            <h2>AI Snake (Q-Learning)</h2>
+            <p>Học tăng cường: Tự tiến hóa sinh tồn</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="view-intro" class="view-container hidden">
+        <h1 id="intro-title">Giới thiệu Game</h1>
+        <div class="intro-box">
+          <h3>Cách thức hoạt động:</h3>
+          <p id="intro-desc">Nội dung giới thiệu...</p>
+          <div class="intro-actions">
+            <button class="btn-secondary" id="btn-back-hub">Quay lại</button>
+            <button class="btn-primary" id="btn-start-game">Vào Game Ngay</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="view-game" class="view-container hidden">
+        <div class="game-layout">
+          <div class="board-section">
+            <div id="board" class="blue merida"></div>
+          </div>
+          <div class="info-section">
+            <div class="ai-chat-box">
+              <div class="avatar">🤖</div>
+              <div class="speech-bubble" id="ai-chat-text">Xin chào! Bạn đi trước nhé (Quân Trắng).</div>
+            </div>
+            <div class="history-box">
+              <h3>Lịch sử nước đi</h3>
+              <div id="move-history" class="history-list"></div>
+            </div>
+            <div class="game-controls">
+              <button class="btn-danger" id="btn-exit-game">Thoát ra Hub</button>
+              <button class="btn-primary" id="btn-auto-ai">AI tự đấu</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="view-snake" class="view-container hidden">
+        <h1>AI Snake 🐍</h1>
+        <div class="game-layout">
+          <div class="board-section" style="background: #2c3e50; border-radius: 10px;">
+            <canvas id="snake-canvas" width="500" height="500"></canvas>
+          </div>
+          <div class="info-section">
+            <div class="history-box">
+              <h3 style="color: #27ae60;">Bảng thông số AI</h3>
+              <p><strong>Mô hình:</strong> Q-Learning (RL)</p>
+              <p><strong>Điểm số hiện tại:</strong> <span id="snake-score" style="font-size: 24px; color: #e74c3c;">0</span></p>
+              <p><strong>Trạng thái:</strong> <span id="snake-status">Đang đợi...</span></p>
+            </div>
+            <div class="game-controls">
+              <button class="btn-danger" id="btn-exit-snake">Thoát ra Hub</button>
+              <button class="btn-primary" id="btn-start-snake" style="background: #27ae60;">Bắt đầu AI</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="modal-game-over" class="modal hidden">
+        <div class="modal-content">
+          <h2 id="modal-result-title">Kết thúc!</h2>
+          <p id="modal-result-desc">Trắng đã chiến thắng.</p>
+          <button class="btn-primary" id="btn-close-modal">Chơi lại</button>
+        </div>
+      </div>
+
     </div>
-    <div id="status">Lượt của bạn (Trắng)</div>
-    
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
