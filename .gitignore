@@ -1,2 +1,32 @@
+# ========================
+# PYTHON & MÔI TRƯỜNG ẢO
+# ========================
 venv/
-data/chess_games.csv
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+
+# ========================
+# NODE.JS & FRONTEND (VITE)
+# ========================
+frontend/node_modules/
+frontend/dist/
+frontend/npm-debug.log*
+
+# ========================
+# DATA & MODEL (Cực kỳ quan trọng)
+# ========================
+# Chặn thư mục data để không vô tình push file CSV 4GB lên làm sập Git
+data/
+
+# ========================
+# FILE THỰC THI & KHÁC
+# ========================
+# Không push file exe vì nó chỉ chạy trên Windows, máy Mac/Linux của thành viên khác kéo về cũng không xài được
+stockfish.exe
+
+# File cấu hình của VS Code (Tùy chọn)
+.vscode/
