@@ -4,6 +4,15 @@ import random
 import numpy as np
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+TEMP_DIR = os.path.join(BASE_DIR, "temp_cache")
+os.makedirs(TEMP_DIR, exist_ok=True)
+os.environ['TMPDIR'] = TEMP_DIR
+os.environ['TEMP'] = TEMP_DIR
+os.environ['TMP'] = TEMP_DIR
+os.environ['JOBLIB_TEMP_FOLDER'] = TEMP_DIR
+
+
 MODEL_PATH = os.path.join(BASE_DIR, "data", "snake_brain.pkl")
 META_PATH = os.path.join(BASE_DIR, "data", "snake_meta.txt")
 
@@ -92,7 +101,7 @@ class SnakeEnv:
         return reward, game_over, self.score
 
 def train():
-    target_episodes = 2000000 # MỐC MỤC TIÊU 2 TRIỆU VÁN
+    target_episodes = 6000000 
     gamma = 0.9   
     lr = 0.001    
     
