@@ -7,71 +7,72 @@ from src.ai_black import get_best_move_black
 import joblib
 import os
 import numpy as np
+import time
 
 app = FastAPI()
 
-# Mở cửa (CORS) cho phép Web Frontend (cổng 5173) kết nối vào
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Cho phép mọi nguồn truy cập
+    allow_origins=["*"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# --- KHAI BÁO BIẾN CHO SNAKE ---
+try:
+    snake_q_table = joblib.load(os.path.join("data", "snake_brain.pkl"))
+except:
+    snake_q_table = {}
 
-# ----------------- CHESS API -----------------
 class MoveRequest(BaseModel):
     fen: str
     ai_color: str
 
+class SnakeState(BaseModel):
+    state_vector: list[int]
+    current_dir: dict
+
+# ==========================================
+# 1. API CỜ VUA
+# ==========================================
 @app.post("/play_ai")
 def play_ai(req: MoveRequest):
     board = chess.Board(req.fen)
-    if board.is_game_over():
+    if board.is_game_over(): 
         return {"game_over": True, "result": board.result()}
-    if req.ai_color == "white":
-        move = get_best_move_white(board)
-    else:
-        move = get_best_move_black(board)
+        
+    start_time = time.time() # Bắt đầu bấm giờ
+    
+    move = get_best_move_white(board) if req.ai_color == "white" else get_best_move_black(board)
+    
+    inference_time = round((time.time() - start_time) * 1000, 2) # Đổi ra mili-giây (ms)
     
     if move:
         board.push(move)
         return {
             "fen": board.fen(), 
             "move": move.uci(), 
-            "game_over": board.is_game_over()
+            "game_over": board.is_game_over(),
+            "inference_time_ms": inference_time # Gửi thời gian AI suy nghĩ về cho Web
         }
     return {"error": "Không tìm thấy nước đi"}
 
-
-# ----------------- SNAKE API -----------------
-# Load não Rắn
-try:
-    snake_q_table = joblib.load(os.path.join("data", "snake_brain.pkl"))
-except:
-    snake_q_table = {}
-
-class SnakeState(BaseModel):
-    state_vector: list[int]
-    current_dir: dict
-
+# ==========================================
+# 2. API RẮN SĂN MỒI
+# ==========================================
 @app.post("/play_snake")
 def play_snake(req: SnakeState):
-    # Chuyển state JSON thành Tuple để tra từ điển Q-Table
     state_tuple = tuple(req.state_vector)
     
-    # 0: Thẳng, 1: Phải, 2: Trái
     if state_tuple in snake_q_table:
         action = int(np.argmax(snake_q_table[state_tuple]))
     else:
-        action = 0 # Chưa gặp bao giờ thì đi thẳng cầu nguyện
+        action = 0 
         
-    # Tính toán lại hướng tuyệt đối (UP/DOWN/LEFT/RIGHT) để trả về cho Web
     UP, DOWN, LEFT, RIGHT = {"x":0,"y":-1}, {"x":0,"y":1}, {"x":-1,"y":0}, {"x":1,"y":0}
     clock_wise = [RIGHT, DOWN, LEFT, UP]
     
-    # Tìm index hướng hiện tại
     idx = 0
     for i, d in enumerate(clock_wise):
         if d["x"] == req.current_dir["x"] and d["y"] == req.current_dir["y"]:
@@ -83,3 +84,32 @@ def play_snake(req: SnakeState):
     else: new_dir = clock_wise[idx]
     
     return {"new_dir": new_dir}
+
+# ==========================================
+# 3. API THỐNG KÊ (MỚI)
+# ==========================================
+@app.get("/api/stats")
+def get_stats():
+    chess_games = 0
+    snake_episodes = 0
+    
+    # Đọc số ván cờ đã train
+    try:
+        with open("data/training_meta.txt", "r") as f:
+            chess_games = int(f.read().strip())
+    except: pass
+    
+    # Đọc số ván rắn đã train
+    try:
+        with open("data/snake_meta.txt", "r") as f:
+            snake_episodes = int(f.read().strip())
+    except: pass
+    
+    # Tính toán lại độ tự tin của rắn dựa vào Epsilon
+    epsilon = max(0.01, 1.0 * (0.99998 ** snake_episodes))
+    
+    return {
+        "chess_trained_games": chess_games,
+        "snake_trained_episodes": snake_episodes,
+        "snake_epsilon": round(epsilon, 4)
+    }

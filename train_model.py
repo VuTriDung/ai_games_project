@@ -32,8 +32,8 @@ def main():
     model_path = os.path.join(BASE_DIR, "data", "black_brain.pkl")
     meta_path = os.path.join(BASE_DIR, "data", "training_meta.txt")
     
-    # Số ván cờ BẠN MUỐN ĐẠT ĐƯỢC (Đổi số này thành 6000000 sau này)
-    target_total_games = 2000000 
+    # Số ván cờ mục tiêu mà chúng ta muốn AI học được, có thể điều chỉnh tùy theo nhu cầu và khả năng của hệ thống
+    target_total_games = 6000000 
     chunk_size = 100000 
     
     # 1. KIỂM TRA TRÍ NHỚ CŨ
