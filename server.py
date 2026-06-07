@@ -19,11 +19,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- KHAI BÁO BIẾN CHO SNAKE ---
+# --- KHAI BÁO BIẾN ---
 try:
     snake_q_table = joblib.load(os.path.join("data", "snake_brain.pkl"))
 except:
     snake_q_table = {}
+
+try:
+    pacman_model = joblib.load(os.path.join("data", "pacman_brain.pkl"))
+except:
+    pacman_model = None
+
 
 class MoveRequest(BaseModel):
     fen: str
@@ -32,6 +38,9 @@ class MoveRequest(BaseModel):
 class SnakeState(BaseModel):
     state_vector: list[int]
     current_dir: dict
+
+class PacmanState(BaseModel):
+    state_vector: list[int]
 
 # ==========================================
 # 1. API CỜ VUA
@@ -84,6 +93,24 @@ def play_snake(req: SnakeState):
     else: new_dir = clock_wise[idx]
     
     return {"new_dir": new_dir}
+
+
+# ==========================================
+# 4. API PAC-MAN (DQN)
+# ==========================================
+@app.post("/play_pacman")
+def play_pacman(req: PacmanState):
+    if pacman_model is None:
+        # Nếu chưa train xong, đi bừa
+        return {"action": int(np.random.choice([0, 1, 2, 3]))}
+    
+    # Đưa ma trận 16 giác quan vào Mạng Neural
+    q_values = pacman_model.predict([req.state_vector])[0]
+    
+    # Chọn nước đi có điểm Q cao nhất (0: Lên, 1: Xuống, 2: Trái, 3: Phải)
+    action = int(np.argmax(q_values))
+    
+    return {"action": action}
 
 # ==========================================
 # 3. API THỐNG KÊ (MỚI)
