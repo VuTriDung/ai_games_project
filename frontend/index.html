@@ -4,9 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AI Arcade Hub 🌸</title>
-    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Permanent+Marker">
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
   </head>
   <body>
     <div id="app">
@@ -28,11 +25,6 @@
             <div class="game-icon">📊</div>
             <h2>AI Telemetry</h2>
             <p>Research & Performance Dashboard</p>
-          </div>
-          <div class="game-card" id="card-pacman">
-            <div class="game-icon">👻</div>
-            <h2>AI Pac-Man (DQN)</h2>
-            <p>Học tăng cường: Multi-Agent Evasion</p>
           </div>
         </div>
       </div>
@@ -93,26 +85,6 @@
         </div>
       </div>
 
-      <div id="view-pacman" class="view-container hidden">
-        <h1>AI Pac-Man (Classic Arcade) 👻</h1>
-        <div class="game-layout">
-          <div class="board-section" style="background: black; border-radius: 10px; display: flex; justify-content: center; align-items: center;">
-            <div id="pacman" style="height: 470px; width: 382px; border-radius: 5px;"></div>
-          </div>
-          <div class="info-section">
-            <div class="history-box">
-              <h3 style="color: #f1c40f;">Hệ thống AI Đa tác tử</h3>
-              <p><strong>Mô hình:</strong> DQN (Deep Q-Network)</p>
-              <p><strong>Trạng thái:</strong> <span id="pacman-status">Đang đợi...</span></p>
-            </div>
-            <div class="game-controls">
-              <button class="btn-danger" id="btn-exit-pacman">Thoát ra Hub</button>
-              <button class="btn-primary" id="btn-start-pacman" style="background: #f39c12;">Bắt đầu AI</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div id="view-stats" class="view-container hidden" style="max-width: 1200px;">
         <h1>Research Telemetry 📊</h1>
         <div class="tabs">
@@ -134,15 +106,15 @@
             </div>
             <div class="stat-card">
               <div class="stat-label">Estimated Elo</div>
-              <div class="stat-value">1450 <span class="trend good">▲ 12</span></div>
+              <div class="stat-value"><span id="ui-chess-elo">1450</span> <span id="ui-chess-elo-trend" class="trend neutral">-</span></div>
             </div>
             <div class="stat-card">
-              <div class="stat-label">ACPL (Centipawn Loss)</div>
-              <div class="stat-value">42.5 <span class="trend neutral">Khá</span></div>
+              <div class="stat-label">Avg Move Time</div>
+              <div class="stat-value" id="ui-chess-acpl">0.0 <span class="trend neutral">s</span></div>
             </div>
             <div class="stat-card">
               <div class="stat-label">Accuracy %</div>
-              <div class="stat-value">84.2%</div>
+              <div class="stat-value" id="ui-chess-acc">100%</div>
             </div>
           </div>
 
