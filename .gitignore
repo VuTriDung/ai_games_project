@@ -1,32 +1,17 @@
-# ========================
-# PYTHON & MÔI TRƯỜNG ẢO
-# ========================
-venv/
+# Python
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
+venv/
 env/
+.env
+temp_cache/
+data/*.pkl
+data/*.csv
+data/training_meta.txt
+data/snake_meta.txt
 
-# ========================
-# NODE.JS & FRONTEND (VITE)
-# ========================
+# Node/Frontend
 frontend/node_modules/
 frontend/dist/
-frontend/npm-debug.log*
+.DS_Store
 
-# ========================
-# DATA & MODEL (Cực kỳ quan trọng)
-# ========================
-# Chặn thư mục data để không vô tình push file CSV 4GB lên làm sập Git
-data/
-
-# ========================
-# FILE THỰC THI & KHÁC
-# ========================
-# Không push file exe vì nó chỉ chạy trên Windows, máy Mac/Linux của thành viên khác kéo về cũng không xài được
 stockfish.exe
-
-# File cấu hình của VS Code (Tùy chọn)
-.vscode/
