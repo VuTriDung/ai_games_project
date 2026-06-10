@@ -4,6 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AI Arcade Hub 🌸</title>
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Permanent+Marker">
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
   </head>
   <body>
     <div id="app">
@@ -20,6 +23,21 @@
             <div class="game-icon">🐍</div>
             <h2>AI Snake (Q-Learning)</h2>
             <p>Học tăng cường: Tự tiến hóa sinh tồn</p>
+          </div>
+          <div class="game-card" id="card-connect4">
+            <div class="game-icon">🔴</div>
+            <h2>Connect 4</h2>
+            <p>Học tăng cường: Monte Carlo Tree Search</p>
+          </div>
+          <div class="game-card" id="card-flappy">
+            <div class="game-icon">🦅</div>
+            <h2>Flappy Bird AI</h2>
+            <p>Mô phỏng sinh học: Genetic Algorithm</p>
+          </div>
+          <div class="game-card" id="card-2048">
+            <div class="game-icon">🧩</div>
+            <h2>Game 2048</h2>
+            <p>Tìm kiếm xác suất: Expectimax Search</p>
           </div>
           <div class="game-card" id="card-stats">
             <div class="game-icon">📊</div>
@@ -72,14 +90,74 @@
           <div class="info-section">
             <div class="history-box">
               <h3 style="color: #27ae60;">Trạng thái Huấn luyện</h3>
-              <p><strong>Mô hình:</strong> DQN / Q-Table</p>
-              <p><strong>Kỷ lục map:</strong> <span id="snake-max-ui" style="color: #27ae60; font-weight: bold;">0</span></p>
+              <p><strong>Mô hình:</strong> Q-Table</p>
+              <p><strong>Kỷ lục lô này:</strong> <span id="snake-max-ui" style="color: #27ae60; font-weight: bold;">0</span></p>
               <p><strong>Điểm hiện tại:</strong> <span id="snake-score" style="font-size: 24px; color: #e74c3c;">0</span></p>
               <p><strong>Log:</strong> <span id="snake-status">Đang đợi...</span></p>
             </div>
             <div class="game-controls">
               <button class="btn-danger" id="btn-exit-snake">Thoát ra Hub</button>
               <button class="btn-primary" id="btn-start-snake" style="background: #27ae60;">Bắt đầu AI</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="view-connect4" class="view-container hidden">
+        <h1>AI Connect 4 🔴</h1>
+        <div class="game-layout">
+          <div class="board-section" style="background: #2980b9; padding: 10px; border-radius: 10px;">
+            <canvas id="connect4-canvas" width="490" height="420" style="background: #34495e; border-radius: 5px;"></canvas>
+          </div>
+          <div class="info-section">
+            <div class="history-box">
+              <h3 style="color: #3498db;">Trạng thái MCTS</h3>
+              <p><strong>Log:</strong> <span id="connect4-status">Đang đợi thuật toán...</span></p>
+            </div>
+            <div class="game-controls">
+              <button class="btn-danger" id="btn-exit-connect4">Thoát</button>
+              <button class="btn-primary" id="btn-start-connect4">Chơi AI</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="view-flappy" class="view-container hidden">
+        <h1>Flappy Bird (Genetic Algorithm) 🦅</h1>
+        <div class="game-layout">
+          <div class="board-section">
+            <canvas id="flappy-canvas" width="400" height="500" style="background: #71c5cf; border-radius: 5px; border: 2px solid #333;"></canvas>
+          </div>
+          <div class="info-section">
+            <div class="history-box">
+              <h3 style="color: #e67e22;">Tiến hóa Sinh học</h3>
+              <p><strong>Thế hệ:</strong> <span id="flappy-gen">1</span></p>
+              <p><strong>Chim còn sống:</strong> <span id="flappy-alive">0/100</span></p>
+              <p><strong>Log:</strong> <span id="flappy-status">Chờ lai tạo...</span></p>
+            </div>
+            <div class="game-controls">
+              <button class="btn-danger" id="btn-exit-flappy">Thoát</button>
+              <button class="btn-primary" id="btn-start-flappy">Bắt đầu Tiến Hóa</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="view-2048" class="view-container hidden">
+        <h1>AI 2048 (Expectimax) 🧩</h1>
+        <div class="game-layout">
+          <div class="board-section" style="background: #bbada0; padding: 15px; border-radius: 10px;">
+            <canvas id="canvas-2048" width="400" height="400" style="background: #cdc1b4; border-radius: 5px;"></canvas>
+          </div>
+          <div class="info-section">
+            <div class="history-box">
+              <h3 style="color: #d35400;">Tính toán rủi ro</h3>
+              <p><strong>Điểm số:</strong> <span id="score-2048">0</span></p>
+              <p><strong>Log:</strong> <span id="status-2048">Đợi dữ liệu...</span></p>
+            </div>
+            <div class="game-controls">
+              <button class="btn-danger" id="btn-exit-2048">Thoát</button>
+              <button class="btn-primary" id="btn-start-2048">Auto Solve</button>
             </div>
           </div>
         </div>
@@ -93,60 +171,38 @@
         </div>
         
         <div id="stats-chess" class="stats-panel">
-          <h3 class="dash-title">Match Stats & Quality</h3>
-          <div class="stats-grid grid-4">
+          <h3 class="dash-title">Kết Quả Thực Chiến</h3>
+          <div class="stats-grid grid-3">
             <div class="stat-card">
-              <div class="stat-label">Winrate (Black)</div>
+              <div class="stat-label">Winrate (Black - Neural)</div>
               <div class="stat-value" id="ui-chess-winrate">0%</div>
               <div class="wdl-bar">
-                <div id="wdl-w" class="w" style="width: 33%"></div>
-                <div id="wdl-d" class="d" style="width: 33%"></div>
-                <div id="wdl-l" class="l" style="width: 34%"></div>
+                <div id="wdl-w" class="w" style="width: 0%"></div>
+                <div id="wdl-d" class="d" style="width: 0%"></div>
+                <div id="wdl-l" class="l" style="width: 0%"></div>
               </div>
             </div>
             <div class="stat-card">
-              <div class="stat-label">Estimated Elo</div>
-              <div class="stat-value"><span id="ui-chess-elo">1450</span> <span id="ui-chess-elo-trend" class="trend neutral">-</span></div>
+              <div class="stat-label">Tổng trận đã test</div>
+              <div class="stat-value"><span id="ui-chess-total-matches">0</span> <span class="trend neutral">Trận</span></div>
             </div>
             <div class="stat-card">
-              <div class="stat-label">Avg Move Time</div>
-              <div class="stat-value" id="ui-chess-acpl">0.0 <span class="trend neutral">s</span></div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Accuracy %</div>
-              <div class="stat-value" id="ui-chess-acc">100%</div>
+              <div class="stat-label">Tổng số nước đi</div>
+              <div class="stat-value"><span id="ui-chess-total-moves">0</span> <span class="trend good">Moves</span></div>
             </div>
           </div>
 
-          <h3 class="dash-title" style="margin-top: 20px;">AI Thinking & Performance</h3>
-          <div class="stats-grid grid-3">
+          <h3 class="dash-title" style="margin-top: 20px;">Hiệu Suất Mạng Neural (MLP)</h3>
+          <div class="stats-grid grid-2">
             <div class="stat-card">
-              <div class="stat-label">Inference Latency</div>
-              <div class="stat-value" id="ui-chess-inf">0.0 <span class="trend neutral">ms</span></div>
+              <div class="stat-label">Tốc Độ Suy Luận (Inference)</div>
+              <div class="stat-value" id="ui-chess-inf">0.0 <span class="trend neutral">ms/nước</span></div>
+              <p style="font-size: 13px; color: #7f8c8d; margin-top: 10px;">Đo lường thời gian thực tế model MLP xử lý và trả kết quả ma trận từ server.</p>
             </div>
             <div class="stat-card">
-              <div class="stat-label">Nodes Searched</div>
-              <div class="stat-value">2.4M <span style="font-size: 14px; font-weight: normal;">(120K n/s)</span></div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Max Depth Reached</div>
-              <div class="stat-value">18 <span class="trend good">Ply</span></div>
-            </div>
-          </div>
-
-          <div class="stats-grid grid-2" style="margin-top: 20px;">
-            <div class="stat-card">
-              <div class="stat-label">Move Quality Distribution</div>
-              <div class="distribution-row"><span class="d-label">Brilliant (!!)</span><div class="d-bar"><div class="d-fill" style="width: 5%; background: #00b894;"></div></div><span>12</span></div>
-              <div class="distribution-row"><span class="d-label">Best Move</span><div class="d-bar"><div class="d-fill" style="width: 45%; background: #0984e3;"></div></div><span>450</span></div>
-              <div class="distribution-row"><span class="d-label">Inaccuracy</span><div class="d-bar"><div class="d-fill" style="width: 30%; background: #fdcb6e;"></div></div><span>210</span></div>
-              <div class="distribution-row"><span class="d-label">Blunder (??)</span><div class="d-bar"><div class="d-fill" style="width: 15%; background: #d63031;"></div></div><span>45</span></div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Training Progress</div>
-              <p><strong>Games Trained:</strong> <span id="ui-chess-trained">0</span></p>
-              <p><strong>Policy Loss:</strong> 0.241 ▼</p>
-              <p><strong>Value Loss:</strong> 0.089 ▼</p>
+              <div class="stat-label">Tổng Số Games Huấn Luyện</div>
+              <div class="stat-value" id="ui-chess-trained">0</div>
+              <p style="font-size: 13px; color: #7f8c8d; margin-top: 10px;">Số lượng ván tự chơi (Self-play) đã nạp vào trọng số của model mạng nơ-ron.</p>
             </div>
           </div>
         </div>
@@ -191,7 +247,7 @@
               <div class="stat-label">Reinforcement Learning</div>
               <p><strong>Exploration Rate (ε):</strong> <span id="ui-snake-epsilon">0.00</span></p>
               <p><strong>Episodes Trained:</strong> <span id="ui-snake-trained">0</span></p>
-              <p><strong>Explore vs Exploit:</strong> 18% / 82%</p>
+              <p><strong>Explore vs Exploit:</strong> 1% / 99%</p>
               <p><strong>Average Reward:</strong> +12.4</p>
             </div>
           </div>
@@ -204,7 +260,7 @@
 
       <div id="modal-game-over" class="modal hidden">
         <div class="modal-content">
-          <h2 id="modal-result-title">Kết thúc!</h2>
+          <h2 id="modal-result-title">Kết thức!</h2>
           <p id="modal-result-desc">Trắng đã chiến thắng.</p>
           <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
             <button class="btn-secondary" id="btn-dismiss-modal">Về Hub</button>
