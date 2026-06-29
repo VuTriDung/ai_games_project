@@ -41,17 +41,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- KHAI BÁO BIẾN ---
+# --- KHAI BÁO BIẾN CHO SNAKE ---
 try:
     snake_q_table = joblib.load(os.path.join("data", "snake_brain.pkl"))
 except:
     snake_q_table = {}
-
-try:
-    pacman_model = joblib.load(os.path.join("data", "pacman_brain.pkl"))
-except:
-    pacman_model = None
-
 
 class MoveRequest(BaseModel):
     fen: str
@@ -61,17 +55,15 @@ class SnakeState(BaseModel):
     state_vector: list[int]
     current_dir: dict
 
-<<<<<<< Updated upstream
+
 class PacmanState(BaseModel):
-    state_vector: list[int]
-=======
+
 
 class FlappyModelPayload(BaseModel):
     weights: list[float]
     generation: int
     best_score: int
     all_time_best: int
->>>>>>> Stashed changes
 
 # ==========================================
 # 1. API CỜ VUA
@@ -82,11 +74,9 @@ def play_ai(req: MoveRequest):
     if board.is_game_over(): 
         return {"game_over": True, "result": board.result()}
         
-    start_time = time.time() # Bắt đầu bấm giờ
-    
+    start_time = time.time()
     move = get_best_move_white(board) if req.ai_color == "white" else get_best_move_black(board)
-    
-    inference_time = round((time.time() - start_time) * 1000, 2) # Đổi ra mili-giây (ms)
+    inference_time = round((time.time() - start_time) * 1000, 2)
     
     if move:
         board.push(move)
@@ -94,7 +84,7 @@ def play_ai(req: MoveRequest):
             "fen": board.fen(), 
             "move": move.uci(), 
             "game_over": board.is_game_over(),
-            "inference_time_ms": inference_time # Gửi thời gian AI suy nghĩ về cho Web
+            "inference_time_ms": inference_time 
         }
     return {"error": "Không tìm thấy nước đi"}
 
@@ -126,8 +116,9 @@ def play_snake(req: SnakeState):
     return {"new_dir": new_dir}
 
 
+
 # ==========================================
-<<<<<<< Updated upstream
+
 # 4. API PAC-MAN (DQN)
 # ==========================================
 @app.post("/play_pacman")
@@ -146,7 +137,6 @@ def play_pacman(req: PacmanState):
 
 # ==========================================
 # 3. API THỐNG KÊ (MỚI)
-=======
 # 3. API FLAPPY BIRD MODEL
 # ==========================================
 @app.get("/api/flappy/model")
@@ -177,26 +167,22 @@ def save_flappy_model(req: FlappyModelPayload):
 
 # ==========================================
 # 4. API THỐNG KÊ (TELEMETRY)
->>>>>>> Stashed changes
+# ==========================================
+# 3. API THỐNG KÊ (TELEMETRY)
 # ==========================================
 @app.get("/api/stats")
 def get_stats():
     chess_games = 0
     snake_episodes = 0
     
-    # Đọc số ván cờ đã train
     try:
-        with open("data/training_meta.txt", "r") as f:
-            chess_games = int(f.read().strip())
+        with open("data/training_meta.txt", "r") as f: chess_games = int(f.read().strip())
     except: pass
     
-    # Đọc số ván rắn đã train
     try:
-        with open("data/snake_meta.txt", "r") as f:
-            snake_episodes = int(f.read().strip())
+        with open("data/snake_meta.txt", "r") as f: snake_episodes = int(f.read().strip())
     except: pass
     
-    # Tính toán lại độ tự tin của rắn dựa vào Epsilon
     epsilon = max(0.01, 1.0 * (0.99998 ** snake_episodes))
     
     return {
