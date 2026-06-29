@@ -1,3 +1,8 @@
+import json
+import os
+import time
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -5,9 +10,26 @@ import chess
 from src.ai_white import get_best_move_white
 from src.ai_black import get_best_move_black
 import joblib
-import os
 import numpy as np
-import time
+
+DATA_DIR = Path(__file__).resolve().parent / "data"
+FLAPPY_MODEL_PATH = DATA_DIR / "flappy_model.json"
+
+
+def _load_flappy_model():
+    if not FLAPPY_MODEL_PATH.exists():
+        return None
+    try:
+        with open(FLAPPY_MODEL_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return None
+
+
+def _save_flappy_model(payload: dict):
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    with open(FLAPPY_MODEL_PATH, "w", encoding="utf-8") as f:
+        json.dump(payload, f, ensure_ascii=False, indent=2)
 
 app = FastAPI()
 
@@ -32,6 +54,16 @@ class MoveRequest(BaseModel):
 class SnakeState(BaseModel):
     state_vector: list[int]
     current_dir: dict
+
+
+class PacmanState(BaseModel):
+
+
+class FlappyModelPayload(BaseModel):
+    weights: list[float]
+    generation: int
+    best_score: int
+    all_time_best: int
 
 # ==========================================
 # 1. API CỜ VUA
@@ -83,6 +115,58 @@ def play_snake(req: SnakeState):
     
     return {"new_dir": new_dir}
 
+
+
+# ==========================================
+
+# 4. API PAC-MAN (DQN)
+# ==========================================
+@app.post("/play_pacman")
+def play_pacman(req: PacmanState):
+    if pacman_model is None:
+        # Nếu chưa train xong, đi bừa
+        return {"action": int(np.random.choice([0, 1, 2, 3]))}
+    
+    # Đưa ma trận 16 giác quan vào Mạng Neural
+    q_values = pacman_model.predict([req.state_vector])[0]
+    
+    # Chọn nước đi có điểm Q cao nhất (0: Lên, 1: Xuống, 2: Trái, 3: Phải)
+    action = int(np.argmax(q_values))
+    
+    return {"action": action}
+
+# ==========================================
+# 3. API THỐNG KÊ (MỚI)
+# 3. API FLAPPY BIRD MODEL
+# ==========================================
+@app.get("/api/flappy/model")
+def get_flappy_model():
+    saved = _load_flappy_model()
+    if not saved:
+        return {"exists": False}
+
+    return {
+        "exists": True,
+        "weights": saved.get("weights", []),
+        "generation": saved.get("generation", 1),
+        "best_score": saved.get("best_score", 0),
+        "all_time_best": saved.get("all_time_best", 0),
+        "path": str(FLAPPY_MODEL_PATH),
+    }
+
+
+@app.post("/api/flappy/model")
+def save_flappy_model(req: FlappyModelPayload):
+    _save_flappy_model({
+        "weights": req.weights,
+        "generation": req.generation,
+        "best_score": req.best_score,
+        "all_time_best": req.all_time_best,
+    })
+    return {"saved": True, "path": str(FLAPPY_MODEL_PATH)}
+
+# ==========================================
+# 4. API THỐNG KÊ (TELEMETRY)
 # ==========================================
 # 3. API THỐNG KÊ (TELEMETRY)
 # ==========================================
