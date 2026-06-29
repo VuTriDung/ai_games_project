@@ -17,13 +17,23 @@ FLAPPY_MODEL_PATH = DATA_DIR / "flappy_model.json"
 
 
 def _load_flappy_model():
+    default_payload = {
+        "weights": [],
+        "generation": 1,
+        "best_score": 0,
+        "all_time_best": 0,
+    }
+
     if not FLAPPY_MODEL_PATH.exists():
-        return None
+        _save_flappy_model(default_payload)
+        return default_payload
+
     try:
         with open(FLAPPY_MODEL_PATH, "r", encoding="utf-8") as f:
             return json.load(f)
     except Exception:
-        return None
+        _save_flappy_model(default_payload)
+        return default_payload
 
 
 def _save_flappy_model(payload: dict):
@@ -57,6 +67,7 @@ class SnakeState(BaseModel):
 
 
 class PacmanState(BaseModel):
+    pass
 
 
 class FlappyModelPayload(BaseModel):
@@ -142,8 +153,6 @@ def play_pacman(req: PacmanState):
 @app.get("/api/flappy/model")
 def get_flappy_model():
     saved = _load_flappy_model()
-    if not saved:
-        return {"exists": False}
 
     return {
         "exists": True,
