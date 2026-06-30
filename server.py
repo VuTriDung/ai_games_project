@@ -12,6 +12,9 @@ from src.ai_black import get_best_move_black
 import joblib
 import numpy as np
 
+# === THÊM MỚI: import AI 2048 ===
+from src.ai_2048 import get_best_move_2048
+
 DATA_DIR = Path(__file__).resolve().parent / "data"
 FLAPPY_MODEL_PATH = DATA_DIR / "flappy_model.json"
 
@@ -57,6 +60,9 @@ try:
 except:
     snake_q_table = {}
 
+# === THÊM MỚI: khai báo pacman_model để tránh lỗi ===
+pacman_model = None
+
 class MoveRequest(BaseModel):
     fen: str
     ai_color: str
@@ -75,6 +81,10 @@ class FlappyModelPayload(BaseModel):
     generation: int
     best_score: int
     all_time_best: int
+
+# === THÊM MỚI: class Grid2048 ===
+class Grid2048(BaseModel):
+    grid: list[list[int]]
 
 # ==========================================
 # 1. API CỜ VUA
@@ -199,3 +209,16 @@ def get_stats():
         "snake_trained_episodes": snake_episodes,
         "snake_epsilon": round(epsilon, 4)
     }
+
+# ==========================================
+# 5. API GAME 2048 (Expectimax)
+# ==========================================
+@app.post("/play_2048")
+def play_2048(req: Grid2048):
+    try:
+        direction = get_best_move_2048(req.grid)
+        return {"direction": direction}
+    except Exception as e:
+        # Fallback: random nếu có lỗi
+        import random
+        return {"direction": random.choice(["up", "down", "left", "right"])}
