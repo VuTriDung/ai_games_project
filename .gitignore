@@ -1,3 +1,17 @@
-﻿.venv/
+﻿# Python
 __pycache__/
-*.pyc
+venv/
+env/
+.env
+temp_cache/
+data/*.pkl
+data/*.csv
+data/training_meta.txt
+data/snake_meta.txt
+
+# Node/Frontend
+frontend/node_modules/
+frontend/dist/
+.DS_Store
+
+stockfish.exe
