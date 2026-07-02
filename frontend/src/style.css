@@ -76,6 +76,10 @@ button {
 
 .game-controls { display: flex; gap: 10px; justify-content: space-between; }
 
+/* Make Connect4 control buttons uniform size and stacking */
+#view-connect4 .game-controls { display: flex; flex-direction: column; gap: 10px; align-items: stretch; }
+#view-connect4 .game-controls button { width: 100%; padding: 14px 12px; font-size: 15px; border-radius: 12px; }
+
 /* MODAL GAME OVER */
 .modal {
   position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
