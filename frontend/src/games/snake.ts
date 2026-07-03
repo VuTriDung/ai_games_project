@@ -1,4 +1,4 @@
-import { showView } from '../main';
+import { showView, API_BASE_URL } from '../main';
 import { realStats } from '../dashboard';
 
 const canvas = document.getElementById('snake-canvas') as HTMLCanvasElement;
@@ -55,8 +55,11 @@ document.getElementById('btn-start-snake')?.addEventListener('click', () => {
 
     snakeInterval = setInterval(async () => {
         try {
-            // Thay link này bằng link Backend Render của bạn
-            const res = await fetch('https://ai-arcade-backend.onrender.com/play_snake', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ state_vector: getSnakeState(), current_dir: snakeDir }) });
+            const res = await fetch(`${API_BASE_URL}/play_snake`, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ state_vector: getSnakeState(), current_dir: snakeDir }) 
+            });
             snakeDir = (await res.json()).new_dir; 
             
             if (snakeDir.y === -1) realStats.snake.dirUp++; else if (snakeDir.y === 1) realStats.snake.dirDown++; else if (snakeDir.x === -1) realStats.snake.dirLeft++; else realStats.snake.dirRight++;
@@ -64,7 +67,7 @@ document.getElementById('btn-start-snake')?.addEventListener('click', () => {
             const newHead = { x: snake[0].x + snakeDir.x, y: snake[0].y + snakeDir.y };
             stepsWithoutFood++; 
             realStats.snake.totalFoodSteps++;
-            realStats.snake.totalSteps++; // Cập nhật tổng bước đi
+            realStats.snake.totalSteps++;
             
             // Khởi tạo thông số AI mô phỏng
             realStats.snake.tdError = Math.random() * 0.1;

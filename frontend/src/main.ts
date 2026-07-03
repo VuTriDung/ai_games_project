@@ -3,6 +3,12 @@ import 'chessground/assets/chessground.base.css'
 import 'chessground/assets/chessground.brown.css'
 import 'chessground/assets/chessground.cburnett.css'
 
+
+export const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') 
+    ? 'http://localhost:8000' 
+    : 'https://ai-games-project-wkyu.onrender.com';
+
+    
 // Import hàm khởi tạo Tab từ dashboard
 import { initDashboardTabs } from './dashboard';
 

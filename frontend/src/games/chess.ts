@@ -1,4 +1,4 @@
-import { showView } from '../main';
+import { showView, API_BASE_URL } from '../main';
 import { realStats } from '../dashboard';
 import { Chess } from 'chess.js';
 import { Chessground } from 'chessground';
@@ -96,7 +96,7 @@ async function onUserMove(orig: Key, dest: Key) {
     ground.set({ movable: { color: undefined } }); 
     
     try {
-        const res = await fetch('https://ai-games-project-wkyu.onrender.com/play_ai', { 
+        const res = await fetch(`${API_BASE_URL}/play_ai`, { 
             method: 'POST', 
             headers: { 'Content-Type': 'application/json' }, 
             body: JSON.stringify({ fen: game.fen(), ai_color: 'black' }) 

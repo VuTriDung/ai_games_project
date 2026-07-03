@@ -1,4 +1,4 @@
-import { showView } from '../main';
+import { showView, API_BASE_URL } from '../main';
 import { realStats } from '../dashboard'; // BỔ SUNG DATA CONNECT
 
 const canvas = document.getElementById('connect4-canvas') as HTMLCanvasElement;
@@ -85,7 +85,11 @@ async function aiMove() {
     try {
         const body: any = { board, ai_player: currentPlayer };
         const start = performance.now(); // Bắt đầu đếm giờ
-        const res = await fetch(`https://ai-games-project-wkyu.onrender.com/play_connect4/${aiMode}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        const res = await fetch(`${API_BASE_URL}/play_connect4/${aiMode}`, { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify(body) 
+        });        
         const timeTaken = performance.now() - start; // Dừng đếm giờ
         const data = await res.json();
         
