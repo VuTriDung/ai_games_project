@@ -32,7 +32,7 @@ const cfg: Config = {
 
 async function saveFlappyWeights(weights: number[], generation: number, bestScore: number, allTimeBest: number): Promise<void> {
   try {
-    await fetch('http://localhost:8000/api/flappy/model', {
+    await fetch('https://ai-games-project-wkyu.onrender.com/api/flappy/model', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -415,7 +415,7 @@ async function startFlappyRun(): Promise<void> {
   let initialNets: NeuralNet[] | null = null;
   let initialAllTimeBest = 0;
   try {
-    const res = await fetch('http://localhost:8000/api/flappy/model');
+    const res = await fetch('https://ai-games-project-wkyu.onrender.com/api/flappy/model');
     if (res.ok) {
       const data = await res.json();
       if (data?.exists && Array.isArray(data.weights) && data.weights.length > 0) {

@@ -85,7 +85,7 @@ async function aiMove() {
     try {
         const body: any = { board, ai_player: currentPlayer };
         const start = performance.now(); // Bắt đầu đếm giờ
-        const res = await fetch(`http://localhost:8000/play_connect4/${aiMode}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        const res = await fetch(`https://ai-games-project-wkyu.onrender.com/play_connect4/${aiMode}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
         const timeTaken = performance.now() - start; // Dừng đếm giờ
         const data = await res.json();
         

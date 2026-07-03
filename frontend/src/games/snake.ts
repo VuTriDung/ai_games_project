@@ -52,7 +52,7 @@ document.getElementById('btn-start-snake')?.addEventListener('click', () => {
 
     snakeInterval = setInterval(async () => {
         try {
-            const res = await fetch('http://localhost:8000/play_snake', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ state_vector: getSnakeState(), current_dir: snakeDir }) });
+            const res = await fetch('https://ai-games-project-wkyu.onrender.com/play_snake', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ state_vector: getSnakeState(), current_dir: snakeDir }) });
             snakeDir = (await res.json()).new_dir; 
             
             if (snakeDir.y === -1) realStats.snake.dirUp++; else if (snakeDir.y === 1) realStats.snake.dirDown++; else if (snakeDir.x === -1) realStats.snake.dirLeft++; else realStats.snake.dirRight++;
