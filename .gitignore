@@ -3,7 +3,6 @@ venv/
 env/
 .env
 temp_cache/
-data/*.pkl
 data/*.csv
 data/training_meta.txt
 data/snake_meta.txt
