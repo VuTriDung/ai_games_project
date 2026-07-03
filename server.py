@@ -57,9 +57,12 @@ app.add_middleware(
 )
 
 # --- KHAI BÁO BIẾN CHO SNAKE ---
+SNAKE_MODEL_PATH = DATA_DIR / "snake_brain.pkl"
 try:
-    snake_q_table = joblib.load(os.path.join("data", "snake_brain.pkl"))
-except:
+    snake_q_table = joblib.load(SNAKE_MODEL_PATH)
+    print(f"ĐÃ TẢI THÀNH CÔNG NÃO RẮN VỚI {len(snake_q_table)} TRẠNG THÁI!")
+except Exception as e:
+    print(f"CẢNH BÁO: Không tải được não Rắn do lỗi -> {e}")
     snake_q_table = {}
 
 # === THÊM MỚI: khai báo pacman_model để tránh lỗi ===
