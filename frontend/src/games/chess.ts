@@ -96,7 +96,7 @@ async function onUserMove(orig: Key, dest: Key) {
     ground.set({ movable: { color: undefined } }); 
     
     try {
-        const res = await fetch('http://localhost:8000/play_ai', { 
+        const res = await fetch('https://ai-games-project-wkyu.onrender.com/play_ai', { 
             method: 'POST', 
             headers: { 'Content-Type': 'application/json' }, 
             body: JSON.stringify({ fen: game.fen(), ai_color: 'black' }) 
@@ -144,7 +144,7 @@ document.getElementById('btn-auto-ai')?.addEventListener('click', async () => {
     while (isAiVsAi && !game.isGameOver()) {
         aiChatText.innerText = `AI ${currentColor} đang suy nghĩ...`;
         try {
-            const res = await fetch('http://localhost:8000/play_ai', { 
+            const res = await fetch('https://ai-games-project-wkyu.onrender.com/play_ai', { 
                 method: 'POST', 
                 headers: { 'Content-Type': 'application/json' }, 
                 body: JSON.stringify({ fen: game.fen(), ai_color: currentColor }) 

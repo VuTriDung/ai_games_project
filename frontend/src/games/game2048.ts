@@ -245,7 +245,7 @@ function handleMove(direction: 'up' | 'down' | 'left' | 'right') {
 
 async function getAIMove(grid: number[][]): Promise<string | null> {
     try {
-        const res = await fetch('http://localhost:8000/play_2048', {
+        const res = await fetch('https://ai-games-project-wkyu.onrender.com/play_2048', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ grid }),
