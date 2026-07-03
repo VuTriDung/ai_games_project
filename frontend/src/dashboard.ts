@@ -1,35 +1,36 @@
 // BỘ KHO LƯU TRỮ CHỈ SỐ THỰC TẾ TRONG SUỐT QUÁ TRÌNH CHẠY LOCAL
 export const realStats = {
     chess: {
-        // Trắng: Minimax
         w_wins: 0, w_draws: 0, w_losses: 0,
         w_totalMoves: 0, w_totalTimeMs: 0,
         w_nodesEvaluated: 0, w_maxDepth: 0,
         w_alphaBetaPruningRate: 0, w_heuristicVariance: 0, w_heuristicAccuracy: 0,
         
-        // Đen: MLP
         b_wins: 0, b_draws: 0, b_losses: 0,
         b_totalMoves: 0, b_inferenceTimeMs: 0,
         b_crossEntropyLoss: 0, b_predictionAccuracy: 0,
         b_softmaxConfidence: 0, b_valuePredictionError: 0
     },
     snake: {
+        // Chỉ số Academic mới cho Dashboard
         games: 0, totalScore: 0, totalSteps: 0,
         deathWall: 0, deathTail: 0, deathStarve: 0,
-        epsilon: 0, tdError: 0, avgMaxQ: 0, heuristicRewardShape: 0
+        epsilon: 0, tdError: 0, avgMaxQ: 0, heuristicRewardShape: 0,
+        
+        // Các biến cũ giữ lại để UI game Snake không bị lỗi
+        bestScore: 0, maxCoverage: 0, totalFoodSteps: 0, foodEaten: 0,
+        dirUp: 0, dirDown: 0, dirLeft: 0, dirRight: 0
     },
     connect4: {
-        // Đỏ: Minimax
         r_games: 0, r_wins: 0, r_totalTimeMs: 0, r_movesToWin: 0,
         r_transpositionHits: 0, r_pat2: 0, r_pat3b: 0, r_pat3o: 0, r_flipRate: 0,
         
-        // Vàng: MCTS
         y_games: 0, y_wins: 0, y_simulations: 0, y_maxDepth: 0, y_totalNodes: 0,
         y_ucb1: 0, y_exploreRatio: 0, y_predictedWinProb: 0
     },
     flappy: {
         generations: 0, bestScore: 0, avgGenScore: 0,
-        fitnessBest: 0, selectionPressure: 0.1, // 10%
+        fitnessBest: 0, selectionPressure: 0.1,
         jumpRate: 0, geneticDiversityStdDev: 0
     },
     game2048: {
