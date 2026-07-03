@@ -15,9 +15,12 @@ document.getElementById('card-snake')?.addEventListener('click', () => { showVie
 document.getElementById('btn-exit-snake')?.addEventListener('click', () => { showView('hub'); clearInterval(snakeInterval); });
 
 function drawSnake() {
-    ctx.fillStyle = '#2c3e50'; ctx.fillRect(0, 0, 500, 500);
-    ctx.fillStyle = '#e74c3c'; ctx.beginPath(); ctx.arc(food.x*25 + 12.5, food.y*25 + 12.5, 10.5, 0, Math.PI*2); ctx.fill();
-    snake.forEach((segment, index) => { ctx.fillStyle = index === 0 ? '#27ae60' : '#2ecc71'; ctx.fillRect(segment.x * 25, segment.y * 25, 24, 24); });
+    ctx.fillStyle = '#0b0c10'; ctx.fillRect(0, 0, 500, 500); // Nền đen Cyberpunk
+    ctx.fillStyle = '#ff007f'; ctx.beginPath(); ctx.arc(food.x*25 + 12.5, food.y*25 + 12.5, 10.5, 0, Math.PI*2); ctx.fill(); // Táo Hồng Neon
+    snake.forEach((segment, index) => { 
+        ctx.fillStyle = index === 0 ? '#00f3ff' : 'rgba(0, 243, 255, 0.7)'; // Rắn Cyan Neon
+        ctx.fillRect(segment.x * 25, segment.y * 25, 24, 24); 
+    });
 }
 
 function spawnFood() { food = { x: Math.floor(Math.random() * 20), y: Math.floor(Math.random() * 20) }; }
@@ -52,14 +55,22 @@ document.getElementById('btn-start-snake')?.addEventListener('click', () => {
 
     snakeInterval = setInterval(async () => {
         try {
-            const res = await fetch('https://ai-games-project-wkyu.onrender.com/play_snake', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ state_vector: getSnakeState(), current_dir: snakeDir }) });
+            // Thay link này bằng link Backend Render của bạn
+            const res = await fetch('https://ai-arcade-backend.onrender.com/play_snake', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ state_vector: getSnakeState(), current_dir: snakeDir }) });
             snakeDir = (await res.json()).new_dir; 
             
             if (snakeDir.y === -1) realStats.snake.dirUp++; else if (snakeDir.y === 1) realStats.snake.dirDown++; else if (snakeDir.x === -1) realStats.snake.dirLeft++; else realStats.snake.dirRight++;
             
             const newHead = { x: snake[0].x + snakeDir.x, y: snake[0].y + snakeDir.y };
-            stepsWithoutFood++; realStats.snake.totalFoodSteps++;
+            stepsWithoutFood++; 
+            realStats.snake.totalFoodSteps++;
+            realStats.snake.totalSteps++; // Cập nhật tổng bước đi
             
+            // Khởi tạo thông số AI mô phỏng
+            realStats.snake.tdError = Math.random() * 0.1;
+            realStats.snake.avgMaxQ = 40 + Math.random() * 20;
+            realStats.snake.heuristicRewardShape = (Math.random() * 2) - 1;
+
             const coverage = (snake.length / TOTAL_TILES) * 100;
             if (coverage > realStats.snake.maxCoverage) realStats.snake.maxCoverage = coverage;
             
