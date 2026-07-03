@@ -1,4 +1,4 @@
-import { showView } from '../main';
+import { showView, API_BASE_URL } from '../main';
 import { realStats } from '../dashboard';
 
 // ─── Cấu hình và hằng số ─────────────────────────────
@@ -245,7 +245,7 @@ function handleMove(direction: 'up' | 'down' | 'left' | 'right') {
 
 async function getAIMove(grid: number[][]): Promise<string | null> {
     try {
-        const res = await fetch('https://ai-games-project-wkyu.onrender.com/play_2048', {
+        const res = await fetch(`${API_BASE_URL}/play_2048`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ grid }),
