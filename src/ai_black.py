@@ -3,24 +3,24 @@ import numpy as np
 import random
 import joblib
 import os
+from pathlib import Path
 
 # Từ điển định giá quân cờ
 PIECE_MAP = {
-    chess.PAWN: 1, 
-    chess.KNIGHT: 3, 
-    chess.BISHOP: 3,
-    chess.ROOK: 5, 
-    chess.QUEEN: 9, 
-    chess.KING: 100
+    chess.PAWN: 1, chess.KNIGHT: 3, chess.BISHOP: 3,
+    chess.ROOK: 5, chess.QUEEN: 9, chess.KING: 100
 }
 
-# Thử nạp "bộ não" đã được huấn luyện
-MODEL_PATH = "data/black_brain.pkl"
+# Tự động dò đường dẫn gốc bất kể chạy trên môi trường nào
+BASE_DIR = Path(__file__).resolve().parent.parent
+MODEL_PATH = BASE_DIR / "data" / "black_brain.pkl"
+
 try:
     model = joblib.load(MODEL_PATH)
     HAS_MODEL = True
-except FileNotFoundError:
-    print("Chưa tìm thấy file black_brain.pkl. AI Đen sẽ đánh Random!")
+    print("ĐÃ TẢI THÀNH CÔNG NÃO CỜ VUA MLP!")
+except Exception as e:
+    print(f"CẢNH BÁO: Chưa tìm thấy file black_brain.pkl do lỗi -> {e}. AI Đen sẽ đánh Random!")
     HAS_MODEL = False
 
 def board_to_features(board):
