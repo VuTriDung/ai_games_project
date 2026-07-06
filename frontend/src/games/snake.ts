@@ -1,5 +1,5 @@
 import { showView, API_BASE_URL } from '../main';
-import { realStats } from '../dashboard';
+import { realStats, saveTelemetry } from '../dashboard';
 
 const canvas = document.getElementById('snake-canvas') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;
@@ -40,12 +40,16 @@ function getSnakeState() {
 function endSnakeGame(reason: string) {
     clearInterval(snakeInterval); 
     document.getElementById('snake-status')!.innerText = reason;
+    
+    // TRACKING TELEMETRY
     realStats.snake.games++; 
     realStats.snake.totalScore += snakeScore;
     if (snakeScore > realStats.snake.bestScore) { 
         realStats.snake.bestScore = snakeScore; 
         document.getElementById('snake-max-ui')!.innerText = snakeScore.toString(); 
     }
+    
+    saveTelemetry();
 }
 
 document.getElementById('btn-start-snake')?.addEventListener('click', () => {

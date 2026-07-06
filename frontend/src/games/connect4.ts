@@ -1,5 +1,5 @@
 import { showView, API_BASE_URL } from '../main';
-import { realStats } from '../dashboard'; // BỔ SUNG DATA CONNECT
+import { realStats, saveTelemetry } from '../dashboard'; // BỔ SUNG DATA CONNECT
 
 const canvas = document.getElementById('connect4-canvas') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;
@@ -70,13 +70,24 @@ function checkWinner(bd: number[][]): number | null {
 }
 
 function showResult(winner: number | null) {
-    // TRACKING TELEMETRY (Chỉ ghi nhận khi AI đấu AI)
     if (aiPlayer === null) {
+        // Chế độ: AI Đỏ (Minimax) đấu AI Vàng (MCTS)
         realStats.connect4.r_games++; realStats.connect4.y_games++;
         if (winner === 1) realStats.connect4.r_wins++;
         if (winner === 2) realStats.connect4.y_wins++;
+    } else {
+        // Chế độ: Người đấu với AI
+        if (aiMode === 'minimax') {
+            realStats.connect4.r_games++; // Tính số game cho AI Minimax
+            if (winner === aiPlayer) realStats.connect4.r_wins++; 
+        } else if (aiMode === 'mcts') {
+            realStats.connect4.y_games++; // Tính số game cho AI MCTS
+            if (winner === aiPlayer) realStats.connect4.y_wins++;
+        }
     }
-    document.getElementById('connect4-status')!.innerText = winner === 0 ? 'Hòa!' : `Người chơi ${winner} thắng!`;
+    
+    document.getElementById('connect4-status')!.innerText = winner === 0 ? 'Hòa!' : `Game Over.`;
+    saveTelemetry(); // ĐẨY SỐ LIỆU LÊN SERVER TOÀN CẦU
 }
 
 async function aiMove() {

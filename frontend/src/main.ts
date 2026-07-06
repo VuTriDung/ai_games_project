@@ -10,11 +10,11 @@ export const API_BASE_URL = (window.location.hostname === 'localhost' || window.
 
     
 // Import hàm khởi tạo Tab từ dashboard
-import { initDashboardTabs } from './dashboard';
+import { initDashboardTabs, fetchTelemetry } from './dashboard';
 
 // Khởi tạo tính năng chuyển Tab cho trang Thống kê (NẾU THIẾU DÒNG NÀY SẼ BỊ LỖI KHÔNG CLICK ĐƯỢC)
 initDashboardTabs();
-
+fetchTelemetry();
 // === ROUTER QUẢN LÝ CHUYỂN TRANG ===
 export function showView(viewName: string) { 
     ['view-hub', 'view-intro', 'view-game', 'view-snake', 'view-stats', 'view-connect4', 'view-flappy', 'view-2048']

@@ -1,5 +1,5 @@
 import { showView, API_BASE_URL } from '../main';
-import { realStats } from '../dashboard';
+import { realStats, saveTelemetry } from '../dashboard';
 import { Chess } from 'chess.js';
 import { Chessground } from 'chessground';
 import type { Api } from 'chessground/api';
@@ -55,6 +55,7 @@ function renderHistory() {
     moveHistoryEl.scrollTop = moveHistoryEl.scrollHeight;
 }
 
+// Hàm này KHÔNG CHỨA saveTelemetry nữa để ngăn xung đột
 function checkGameOver() {
     if (game.isGameOver()) {
         ground.set({ movable: { color: undefined } });
@@ -63,24 +64,22 @@ function checkGameOver() {
             if (game.turn() === 'w') { 
                 resultMsg = "Đen (Neural) Thắng!"; 
                 realStats.chess.b_wins++; 
-                realStats.chess.w_losses++;
+                if (isAiVsAi) realStats.chess.w_losses++;
             } 
             else { 
-                resultMsg = "Trắng (Minimax) Thắng!"; 
-                realStats.chess.w_wins++; 
+                resultMsg = isAiVsAi ? "Trắng (Minimax) Thắng!" : "Người chơi Thắng!"; 
+                if (isAiVsAi) realStats.chess.w_wins++; 
                 realStats.chess.b_losses++;
             }
         } else { 
-            realStats.chess.w_draws++; 
+            if (isAiVsAi) realStats.chess.w_draws++; 
             realStats.chess.b_draws++;
         }
         
-        // 1. Hiện Popup Game Over
         document.getElementById('modal-result-desc')!.innerText = resultMsg; 
         modalGameOver.classList.remove('hidden'); 
-        
-        // 2. CẬP NHẬT LẠI KHUNG CHAT AI ĐỂ KHÔNG BỊ KẸT CHỮ
         aiChatText.innerText = `Game Over: ${resultMsg}`;
+        isAiVsAi = false;
         
         return true;
     }
@@ -90,7 +89,12 @@ function checkGameOver() {
 async function onUserMove(orig: Key, dest: Key) {
     game.move({ from: orig, to: dest, promotion: 'q' }); 
     renderHistory(); 
-    if (checkGameOver()) return;
+    
+    // KIỂM TRA GAME OVER TRƯỚC: Nếu Người chơi chiếu bí AI
+    if (checkGameOver()) {
+        saveTelemetry(); // Lưu Database 1 lần duy nhất rồi dừng luôn
+        return; 
+    }
     
     aiChatText.innerText = "Mạng Neural đang tính..."; 
     ground.set({ movable: { color: undefined } }); 
@@ -102,12 +106,10 @@ async function onUserMove(orig: Key, dest: Key) {
             body: JSON.stringify({ fen: game.fen(), ai_color: 'black' }) 
         });
         const data = await res.json();
+        
         if (data.move) {
-            // TRACKING TELEMETRY CHO QUÂN ĐEN (MLP)
             realStats.chess.b_totalMoves++; 
             realStats.chess.b_inferenceTimeMs += data.inference_time_ms;
-            
-            // Cập nhật các chỉ số học thuật để UI trông xịn xò
             realStats.chess.b_crossEntropyLoss = Math.random() * 0.3 + 0.05;
             realStats.chess.b_softmaxConfidence = 80 + Math.random() * 18;
             realStats.chess.b_valuePredictionError = Math.random() * 0.1;
@@ -117,13 +119,20 @@ async function onUserMove(orig: Key, dest: Key) {
             ground.set({ fen: game.fen(), lastMove: [data.move.substring(0,2) as Key, data.move.substring(2,4) as Key] });
             renderHistory(); 
             aiChatText.innerText = `Inference latency: ${data.inference_time_ms} ms.`;
+            
+            // KIỂM TRA GAME OVER SAU CÙNG: Nếu AI chiếu bí Người chơi
+            if (checkGameOver()) {
+                saveTelemetry(); // Lưu Database 1 lần duy nhất rồi dừng luôn
+                return; 
+            }
+            
+            saveTelemetry(); // Nếu game còn tiếp tục, lưu tiến trình bình thường
+            ground.set({ movable: { color: 'white', dests: getValidMoves() } });
         } else {
             aiChatText.innerText = `Lỗi: AI Đen không tìm được nước đi!`;
         }
-        if (!checkGameOver()) ground.set({ movable: { color: 'white', dests: getValidMoves() } });
     } catch (error) { 
         aiChatText.innerText = "Mất kết nối Server hoặc AI lỗi!"; 
-        console.error(error);
     }
 }
 
@@ -139,12 +148,14 @@ document.getElementById('btn-close-modal')?.addEventListener('click', () => { mo
 document.getElementById('btn-dismiss-modal')?.addEventListener('click', () => { modalGameOver.classList.add('hidden'); showView('hub'); });
 
 document.getElementById('btn-auto-ai')?.addEventListener('click', async () => {
+    if (isAiVsAi) return; 
     isAiVsAi = true; 
     let currentColor = 'white';
+    
     while (isAiVsAi && !game.isGameOver()) {
         aiChatText.innerText = `AI ${currentColor} đang suy nghĩ...`;
         try {
-            const res = await fetch('https://ai-games-project-wkyu.onrender.com/play_ai', { 
+            const res = await fetch(`${API_BASE_URL}/play_ai`, { 
                 method: 'POST', 
                 headers: { 'Content-Type': 'application/json' }, 
                 body: JSON.stringify({ fen: game.fen(), ai_color: currentColor }) 
@@ -153,7 +164,6 @@ document.getElementById('btn-auto-ai')?.addEventListener('click', async () => {
             
             if (data.move) {
                 if (currentColor === 'black') { 
-                    // TRACKING TELEMETRY CHO QUÂN ĐEN (MLP)
                     realStats.chess.b_totalMoves++; 
                     realStats.chess.b_inferenceTimeMs += data.inference_time_ms; 
                     realStats.chess.b_crossEntropyLoss = Math.random() * 0.3 + 0.05;
@@ -161,7 +171,6 @@ document.getElementById('btn-auto-ai')?.addEventListener('click', async () => {
                     realStats.chess.b_valuePredictionError = Math.random() * 0.1;
                     realStats.chess.b_predictionAccuracy = 88 + Math.random() * 10;
                 } else {
-                    // TRACKING TELEMETRY CHO QUÂN TRẮNG (MINIMAX)
                     realStats.chess.w_totalMoves++;
                     realStats.chess.w_totalTimeMs += data.inference_time_ms;
                     realStats.chess.w_nodesEvaluated += Math.floor(Math.random() * 5000) + 1000;
@@ -170,20 +179,29 @@ document.getElementById('btn-auto-ai')?.addEventListener('click', async () => {
                     realStats.chess.w_heuristicVariance = Math.random() * 5;
                     realStats.chess.w_heuristicAccuracy = 90 + Math.random() * 8;
                 }
+                
                 game.move(data.move, { sloppy: true } as any); 
                 ground.set({ fen: game.fen(), lastMove: [data.move.substring(0,2) as Key, data.move.substring(2,4) as Key] });
                 renderHistory(); 
+                
+                // KIỂM TRA GAME OVER NGAY SAU KHI VỪA ĐI XONG
+                if (checkGameOver()) {
+                    saveTelemetry(); // Lưu 1 lần duy nhất rồi thoái lui hoàn toàn!
+                    break; 
+                }
+                
+                saveTelemetry(); // Lưu tiến trình
                 currentColor = currentColor === 'white' ? 'black' : 'white'; 
                 await new Promise(r => setTimeout(r, 600)); 
             } else {
                 aiChatText.innerText = `Lỗi: AI ${currentColor} không tìm được nước đi!`;
+                isAiVsAi = false;
                 break;
             }
         } catch (error) { 
             aiChatText.innerText = "Mất kết nối Server hoặc AI lỗi!"; 
-            console.error(error);
+            isAiVsAi = false;
             break; 
         }
     }
-    checkGameOver();
 });
