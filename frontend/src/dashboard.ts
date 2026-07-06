@@ -41,6 +41,39 @@ export const realStats = {
     }
 };
 
+import { API_BASE_URL } from './main';
+
+
+// 1. Hàm Tải dữ liệu toàn cầu khi vừa vào Web
+export async function fetchTelemetry() {
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/telemetry`);
+        const data = await res.json();
+        
+        // KIỂM TRA ĐỂ TRÁNH GÁN DỮ LIỆU RỖNG
+        if (data && typeof data === 'object' && Object.keys(data).length > 0) {
+            // Thay vì gán realStats = data (lỗi const), 
+            // chúng ta dùng Object.assign để copy nội dung của data vào realStats hiện có
+            Object.assign(realStats, data); 
+            
+            refreshDashboard(); // Cập nhật lại UI sau khi có data mới
+        }
+    } catch (e) { 
+        console.error("Lỗi đồng bộ Database", e); 
+    }
+}
+
+// 2. Hàm Lưu dữ liệu lên Đám mây mỗi khi có người chơi
+export async function saveTelemetry() {
+    try {
+        await fetch(`${API_BASE_URL}/api/telemetry`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(realStats)
+        });
+    } catch (e) {}
+}
+
 // Hàm cập nhật Tab giao diện
 export function initDashboardTabs() {
     const tabs = ['chess', 'snake', 'connect4', 'flappy', '2048'];

@@ -1,5 +1,5 @@
 import { showView, API_BASE_URL } from '../main';
-import { realStats } from '../dashboard';
+import { realStats, saveTelemetry } from '../dashboard';
 
 
 // ============================================================
@@ -399,10 +399,12 @@ function updateFlappyStats(generation: number, alive: number): void {
   
   // TRACKING TELEMETRY (Bắn data vào Dashboard)
   realStats.flappy.generations = generation;
-  // Tính tỷ lệ đập cánh ngẫu nhiên (Jump Rate)
   realStats.flappy.jumpRate = 1.2 + Math.random() * 0.5;
   realStats.flappy.geneticDiversityStdDev = 0.15 + (Math.random() * 0.05);
+  
+  saveTelemetry(); 
 }
+
 function setFlappyStatus(message: string): void {
   setTextById('flappy-status', message);
 }

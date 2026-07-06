@@ -1,5 +1,5 @@
 import { showView, API_BASE_URL } from '../main';
-import { realStats } from '../dashboard';
+import { realStats, saveTelemetry } from '../dashboard';
 
 // ─── Cấu hình và hằng số ─────────────────────────────
 const SIZE = 4;
@@ -166,6 +166,8 @@ class Game2048 {
         realStats.game2048.effectiveBranching = 1.5 + Math.random() * 1.5;
         realStats.game2048.predictedEV = this.score + emptyCount * 10;
         realStats.game2048.evError = Math.random() * 2;
+        
+        saveTelemetry();
     }
 
     canMove(direction: 'up' | 'down' | 'left' | 'right'): boolean {

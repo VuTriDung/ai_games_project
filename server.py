@@ -2,6 +2,7 @@ import json
 import os
 import time
 from pathlib import Path
+import asyncio
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -497,3 +498,28 @@ def log_connect4(payload: dict):
         return {"saved": True, "path": str(path)}
     except Exception as e:
         return {"error": str(e)}
+
+
+# ==========================================
+# 6. API DATABASE TOÀN CẦU (LƯU TRỮ THỐNG KÊ LÂU DÀI)
+# ==========================================
+TELEMETRY_PATH = DATA_DIR / "telemetry_db.json"
+
+@app.get("/api/telemetry")
+def get_telemetry():
+    if TELEMETRY_PATH.exists():
+        try:
+            with open(TELEMETRY_PATH, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return {}
+    return {}
+db_lock = asyncio.Lock()
+@app.post("/api/telemetry")
+async def update_telemetry(req: dict):
+    # Luồng nào đến trước sẽ khóa file lại, luồng sau phải đứng chờ
+    async with db_lock:
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        with open(TELEMETRY_PATH, "w", encoding="utf-8") as f:
+            json.dump(req, f, ensure_ascii=False, indent=2)
+    return {"status": "saved"}
