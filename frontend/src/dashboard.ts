@@ -1,3 +1,4 @@
+declare const Chart: any;
 // BỘ KHO LƯU TRỮ CHỈ SỐ THỰC TẾ TRONG SUỐT QUÁ TRÌNH CHẠY LOCAL
 export const realStats = {
     chess: {
@@ -74,114 +75,123 @@ export async function saveTelemetry() {
     } catch (e) {}
 }
 
-// Hàm cập nhật Tab giao diện
 export function initDashboardTabs() {
+    // Danh sách các ID tab tương ứng với 5 game
     const tabs = ['chess', 'snake', 'connect4', 'flappy', '2048'];
+
     tabs.forEach(tab => {
-        document.getElementById(`tab-${tab}`)?.addEventListener('click', (e) => {
-            // Đổi class active cho button
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            (e.target as HTMLElement).classList.add('active');
+        const btn = document.getElementById(`tab-${tab}`);
+        if (!btn) return;
+
+        btn.addEventListener('click', () => {
+            // 1. Reset màu: Xóa class 'active' khỏi tất cả các nút
+            tabs.forEach(t => document.getElementById(`tab-${t}`)?.classList.remove('active'));
             
-            // Đổi panel
+            // 2. Bật màu cho nút đang được click
+            btn.classList.add('active');
+
+            // 3. Ẩn TẤT CẢ các bảng thống kê (Tránh rò rỉ UI chéo)
             tabs.forEach(t => document.getElementById(`stats-${t}`)?.classList.add('hidden'));
+            
+            // 4. Chỉ hiển thị duy nhất bảng thống kê của game đang chọn
             document.getElementById(`stats-${tab}`)?.classList.remove('hidden');
         });
     });
 }
 
-// Hàm đẩy số liệu lên DOM
-export async function refreshDashboard() {
-    // 1. CẬP NHẬT CHESS (MINIMAX vs MLP)
-    const c = realStats.chess;
-    document.getElementById('chess-w-wdl')!.innerText = `${c.w_wins} / ${c.w_draws} / ${c.w_losses}`;
-    document.getElementById('chess-b-wdl')!.innerText = `${c.b_wins} / ${c.b_draws} / ${c.b_losses}`;
-    
-    if (c.w_totalMoves > 0) document.getElementById('chess-w-time')!.innerText = (c.w_totalTimeMs / c.w_totalMoves).toFixed(1);
-    document.getElementById('chess-w-nodes')!.innerText = c.w_nodesEvaluated.toLocaleString();
-    document.getElementById('chess-w-depth')!.innerText = c.w_maxDepth.toString();
-    document.getElementById('chess-w-pruning')!.innerText = `${c.w_alphaBetaPruningRate.toFixed(1)}%`;
-    document.getElementById('chess-w-variance')!.innerText = c.w_heuristicVariance.toFixed(2);
-    document.getElementById('chess-w-accuracy')!.style.width = `${c.w_heuristicAccuracy}%`;
-    document.getElementById('chess-w-acc-text')!.innerText = `${c.w_heuristicAccuracy.toFixed(1)}%`;
 
-    if (c.b_totalMoves > 0) document.getElementById('chess-b-inf')!.innerText = (c.b_inferenceTimeMs / c.b_totalMoves).toFixed(2);
-    document.getElementById('chess-b-loss')!.innerText = c.b_crossEntropyLoss.toFixed(4);
-    document.getElementById('chess-b-conf')!.innerText = c.b_softmaxConfidence.toFixed(1);
-    document.getElementById('chess-b-error')!.innerText = `±${c.b_valuePredictionError.toFixed(2)}`;
-    document.getElementById('chess-b-moves')!.innerText = c.b_totalMoves.toString();
-    document.getElementById('chess-b-accuracy')!.style.width = `${c.b_predictionAccuracy}%`;
-    document.getElementById('chess-b-acc-text')!.innerText = `${c.b_predictionAccuracy.toFixed(1)}%`;
+// Biến lưu trữ các instance của Chart để update thay vì vẽ lại từ đầu
+const charts: any = {};
+
+// Cấu hình màu sắc mặc định của Chart.js cho hợp theme Cyberpunk
+Chart.defaults.color = '#8b9bb4';
+Chart.defaults.font.family = 'Rajdhani';
+
+function createOrUpdateChart(id: string, type: string, data: any, options: any = {}) {
+    const ctx = document.getElementById(id) as HTMLCanvasElement;
+    if (!ctx) return;
+    
+    if (charts[id]) {
+        charts[id].data = data;
+        charts[id].update();
+    } else {
+        charts[id] = new Chart(ctx, { type, data, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, ...options } });
+    }
+}
+
+export async function refreshDashboard() {
+    // 1. CẬP NHẬT CHESS
+    const c = realStats.chess;
+    createOrUpdateChart('chart-chess-wdl', 'doughnut', {
+        labels: ['Trắng Thắng', 'Hòa', 'Đen Thắng'],
+        datasets: [{ data: [c.w_wins, c.w_draws, c.b_wins], backgroundColor: ['#00f3ff', '#8b9bb4', '#ff007f'], borderWidth: 0 }]
+    });
+    
+    document.getElementById('c-w-nodes')!.innerText = c.w_nodesEvaluated.toLocaleString();
+    document.getElementById('c-w-time')!.innerText = c.w_totalMoves ? (c.w_totalTimeMs / c.w_totalMoves).toFixed(1) : "0";
+    document.getElementById('c-w-depth')!.innerText = c.w_maxDepth.toString();
+    document.getElementById('c-w-prun')!.innerText = c.w_alphaBetaPruningRate.toFixed(1);
+
+    document.getElementById('c-b-loss')!.innerText = c.b_crossEntropyLoss.toFixed(4);
+    document.getElementById('c-b-conf')!.innerText = c.b_softmaxConfidence.toFixed(1);
+    document.getElementById('c-b-time')!.innerText = c.b_totalMoves ? (c.b_inferenceTimeMs / c.b_totalMoves).toFixed(1) : "0";
+    document.getElementById('c-b-acc')!.innerText = c.b_predictionAccuracy.toFixed(1);
 
     // 2. CẬP NHẬT SNAKE
     const s = realStats.snake;
-    if (s.games > 0) {
-        document.getElementById('snake-avg-score')!.innerText = (s.totalScore / s.games).toFixed(1);
-        document.getElementById('snake-avg-steps')!.innerText = Math.round(s.totalSteps / s.games).toString();
-    }
-    document.getElementById('snake-ratio')!.innerText = s.totalScore > 0 ? (s.totalSteps / s.totalScore).toFixed(2) : "0.0";
-    document.getElementById('snake-epsilon')!.innerText = s.epsilon.toFixed(4);
-    document.getElementById('snake-td-error')!.innerText = s.tdError.toFixed(4);
-    document.getElementById('snake-max-q')!.innerText = s.avgMaxQ.toFixed(2);
-    document.getElementById('snake-reward-shape')!.innerText = s.heuristicRewardShape > 0 ? `+${s.heuristicRewardShape.toFixed(2)}` : s.heuristicRewardShape.toFixed(2);
+    createOrUpdateChart('chart-snake-death', 'pie', {
+        labels: ['Đâm Tường', 'Cắn Đuôi', 'Chết Đói'],
+        datasets: [{ data: [s.deathWall, s.deathTail, s.deathStarve], backgroundColor: ['#ff007f', '#f1c40f', '#8b9bb4'], borderWidth: 0 }]
+    });
 
-    const sTotalDeaths = s.deathWall + s.deathTail;
-    if (sTotalDeaths > 0) {
-        const wPct = (s.deathWall / sTotalDeaths * 100).toFixed(1);
-        const tPct = (s.deathTail / sTotalDeaths * 100).toFixed(1);
-        document.getElementById('snake-death-wall')!.style.width = `${wPct}%`;
-        document.getElementById('txt-s-wall')!.innerText = `${wPct}%`;
-        document.getElementById('snake-death-tail')!.style.width = `${tPct}%`;
-        document.getElementById('txt-s-tail')!.innerText = `${tPct}%`;
-    }
+    createOrUpdateChart('chart-snake-dir', 'polarArea', {
+        labels: ['Lên', 'Xuống', 'Trái', 'Phải'],
+        datasets: [{ data: [s.dirUp, s.dirDown, s.dirLeft, s.dirRight], backgroundColor: ['#00f3ff', '#ff007f', '#f1c40f', '#00ff00'], borderWidth: 0 }]
+    }, { scales: { r: { ticks: { display: false }, grid: { color: 'rgba(255,255,255,0.1)' } } } });
+
+    document.getElementById('s-avg-score')!.innerText = s.games ? (s.totalScore / s.games).toFixed(1) : "0";
+    document.getElementById('s-td')!.innerText = s.tdError.toFixed(4);
+    document.getElementById('s-q')!.innerText = s.avgMaxQ.toFixed(2);
+    document.getElementById('s-eps')!.innerText = s.epsilon.toFixed(4);
 
     // 3. CẬP NHẬT CONNECT 4
     const c4 = realStats.connect4;
-    document.getElementById('c4-r-winrate')!.innerText = c4.r_games > 0 ? `${(c4.r_wins / c4.r_games * 100).toFixed(1)}%` : "0%";
-    if(c4.r_games > 0) document.getElementById('c4-r-time')!.innerText = (c4.r_totalTimeMs / c4.r_games).toFixed(1);
-    document.getElementById('c4-r-moves')!.innerText = c4.r_games > 0 ? Math.round(c4.r_movesToWin / c4.r_games).toString() : "0";
-    document.getElementById('c4-r-hits')!.innerText = c4.r_transpositionHits.toLocaleString();
-    document.getElementById('c4-r-pat2')!.innerText = c4.r_pat2.toString();
-    document.getElementById('c4-r-pat3b')!.innerText = c4.r_pat3b.toString();
-    document.getElementById('c4-r-pat3o')!.innerText = c4.r_pat3o.toString();
-    document.getElementById('c4-r-flip')!.innerText = `${c4.r_flipRate.toFixed(1)}%`;
+    createOrUpdateChart('chart-c4-win', 'doughnut', {
+        labels: ['Đỏ (Minimax) Thắng', 'Vàng (MCTS) Thắng'],
+        datasets: [{ data: [c4.r_wins, c4.y_wins], backgroundColor: ['#e74c3c', '#f1c40f'], borderWidth: 0 }]
+    });
 
-    document.getElementById('c4-y-winrate')!.innerText = c4.y_games > 0 ? `${(c4.y_wins / c4.y_games * 100).toFixed(1)}%` : "0%";
-    document.getElementById('c4-y-sims')!.innerText = c4.y_simulations.toLocaleString();
-    document.getElementById('c4-y-depth')!.innerText = c4.y_maxDepth.toString();
-    document.getElementById('c4-y-nodes')!.innerText = c4.y_totalNodes.toLocaleString();
-    document.getElementById('c4-y-ucb1')!.innerText = c4.y_ucb1.toFixed(3);
-    document.getElementById('c4-y-ratio')!.innerText = `${c4.y_exploreRatio.toFixed(1)}% / ${(100 - c4.y_exploreRatio).toFixed(1)}%`;
-    document.getElementById('c4-y-prob')!.innerText = `${(c4.y_predictedWinProb * 100).toFixed(1)}%`;
+    document.getElementById('c4-r-moves')!.innerText = c4.r_games ? Math.round(c4.r_movesToWin / c4.r_games).toString() : "0";
+    document.getElementById('c4-r-time')!.innerText = c4.r_games ? (c4.r_totalTimeMs / c4.r_games).toFixed(1) : "0";
+    document.getElementById('c4-r-hit')!.innerText = c4.r_transpositionHits.toLocaleString();
 
-    // 4. CẬP NHẬT FLAPPY BIRD
+    document.getElementById('c4-y-sim')!.innerText = c4.y_simulations.toLocaleString();
+    document.getElementById('c4-y-node')!.innerText = c4.y_totalNodes.toLocaleString();
+    document.getElementById('c4-y-ucb')!.innerText = c4.y_ucb1.toFixed(3);
+
+    // 4. CẬP NHẬT FLAPPY
     const f = realStats.flappy;
-    document.getElementById('flappy-gens')!.innerText = f.generations.toString();
-    document.getElementById('flappy-best')!.innerText = f.bestScore.toString();
-    document.getElementById('flappy-avg')!.innerText = f.avgGenScore.toFixed(1);
-    document.getElementById('flappy-fitness')!.innerText = Math.round(f.fitnessBest).toLocaleString();
-    document.getElementById('flappy-pressure')!.innerText = `${(f.selectionPressure * 100).toFixed(1)}%`;
-    document.getElementById('flappy-jump-rate')!.innerText = f.jumpRate.toFixed(1);
-    document.getElementById('flappy-diversity')!.innerText = f.geneticDiversityStdDev.toFixed(3);
+    document.getElementById('f-gen')!.innerText = `Gen ${f.generations}`;
+    document.getElementById('f-best')!.innerText = f.bestScore.toString();
+    document.getElementById('f-avg')!.innerText = f.avgGenScore.toFixed(1);
+    document.getElementById('f-div')!.innerText = f.geneticDiversityStdDev.toFixed(3);
+    document.getElementById('f-jump')!.innerText = f.jumpRate.toFixed(2);
 
     // 5. CẬP NHẬT 2048
-    const g2 = realStats.game2048;
-    document.getElementById('g2048-avg-score')!.innerText = g2.games > 0 ? Math.round(g2.totalFinalScore / g2.games).toLocaleString() : "0";
-    document.getElementById('g2048-empty')!.innerText = g2.games > 0 ? (g2.totalEmptyTiles / g2.games).toFixed(1) : "0.0";
-    document.getElementById('g2048-nodes-ratio')!.innerText = `${g2.chanceNodes.toLocaleString()} : ${g2.maxNodes.toLocaleString()}`;
-    document.getElementById('g2048-branching')!.innerText = g2.effectiveBranching.toFixed(2);
-    
-    document.getElementById('g2048-mono')!.innerText = g2.monotonicity.toFixed(1);
-    document.getElementById('g2048-smooth')!.innerText = g2.smoothness.toFixed(1);
-    document.getElementById('g2048-ev')!.innerText = g2.predictedEV.toFixed(1);
-    document.getElementById('g2048-ev-err')!.innerText = `±${g2.evError.toFixed(2)}`;
+    const g = realStats.game2048;
+    const p1024 = g.games ? ((g.reach1024 / g.games) * 100).toFixed(1) : 0;
+    const p2048 = g.games ? ((g.reach2048 / g.games) * 100).toFixed(1) : 0;
+    const p4096 = g.games ? ((g.reach4096 / g.games) * 100).toFixed(1) : 0;
 
-    if(g2.games > 0) {
-        document.getElementById('g2048-1024')!.style.width = `${(g2.reach1024 / g2.games) * 100}%`;
-        document.getElementById('txt-g-1024')!.innerText = `${(g2.reach1024 / g2.games * 100).toFixed(1)}%`;
-        document.getElementById('g2048-2048')!.style.width = `${(g2.reach2048 / g2.games) * 100}%`;
-        document.getElementById('txt-g-2048')!.innerText = `${(g2.reach2048 / g2.games * 100).toFixed(1)}%`;
-        document.getElementById('g2048-4096')!.style.width = `${(g2.reach4096 / g2.games) * 100}%`;
-        document.getElementById('txt-g-4096')!.innerText = `${(g2.reach4096 / g2.games * 100).toFixed(1)}%`;
-    }
+    createOrUpdateChart('chart-2048-tiles', 'bar', {
+        labels: ['Ô 1024', 'Ô 2048', 'Ô 4096'],
+        datasets: [{ label: '% Đạt được', data: [p1024, p2048, p4096], backgroundColor: '#edc22e', borderRadius: 4 }]
+    }, { scales: { y: { beginAtZero: true, max: 100 } } });
+
+    document.getElementById('g-branch')!.innerText = g.effectiveBranching.toFixed(2);
+    document.getElementById('g-chance')!.innerText = g.chanceNodes.toLocaleString();
+    document.getElementById('g-max')!.innerText = g.maxNodes.toLocaleString();
+    document.getElementById('g-ev')!.innerText = g.predictedEV.toFixed(1);
+    document.getElementById('g-err')!.innerText = g.evError.toFixed(2);
 }
+
