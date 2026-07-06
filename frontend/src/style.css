@@ -1,149 +1,289 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;600;700&display=swap');
+
 :root {
-  --bg-color: #ffe4e1;
-  --primary-color: #db7093;
-  --btn-color: #ffb6c1;
-  --btn-hover: #ff69b4;
-  --panel-bg: #fff0f5;
+  /* Cyberpunk / Dark Arcade Palette */
+  --bg-color: #0b0c10;
+  --panel-bg: #151828;
+  --card-bg: rgba(21, 24, 40, 0.8);
+  
+  --primary-color: #00f3ff; /* Neon Cyan */
+  --secondary-color: #ff007f; /* Neon Magenta/Pink */
+  --warning-color: #f1c40f; /* Neon Yellow */
+  
+  --text-main: #e0e6ed;
+  --text-muted: #8b9bb4;
+  
+  --border-glow-cyan: 0 0 10px rgba(0, 243, 255, 0.4);
+  --border-glow-pink: 0 0 10px rgba(255, 0, 127, 0.4);
 }
 
 body {
   background-color: var(--bg-color);
-  font-family: 'Verdana', sans-serif;
+  background-image: radial-gradient(circle at top right, #1a1a2e, #0b0c10);
+  color: var(--text-main);
+  font-family: 'Rajdhani', sans-serif;
   margin: 0; padding: 0;
-  display: flex; justify-content: center;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
-#app { width: 100%; max-width: 1000px; padding: 20px; }
+/* ===============================
+   HEADER & FOOTER
+================================= */
+.app-header {
+  background: rgba(11, 12, 16, 0.9);
+  border-bottom: 1px solid var(--primary-color);
+  box-shadow: var(--border-glow-cyan);
+  padding: 15px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky; top: 0; z-index: 100;
+  backdrop-filter: blur(10px);
+}
+.header-logo {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--primary-color);
+  text-shadow: 0 0 8px var(--primary-color);
+  letter-spacing: 2px;
+}
+.header-team {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-muted);
+  display: flex; align-items: center; gap: 10px;
+}
+.pulse-dot {
+  width: 10px; height: 10px;
+  background-color: #00ff00;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #00ff00;
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+.app-footer {
+  margin-top: auto;
+  text-align: center;
+  padding: 20px;
+  background: #090a0f;
+  border-top: 1px solid #1a1a2e;
+  color: var(--text-muted);
+  font-size: 14px;
+  letter-spacing: 1px;
+}
+
+#app { width: 100%; max-width: 1000px; padding: 30px 20px; margin: 0 auto; }
 .hidden { display: none !important; }
-h1 { color: var(--primary-color); text-align: center; }
-.subtitle { text-align: center; color: #555; }
 
-/* NÚT BẤM */
+/* TYPOGRAPHY */
+h1, h2, h3 { font-family: 'Orbitron', sans-serif; margin-top: 0; letter-spacing: 1px; }
+h1 { 
+  color: var(--primary-color); 
+  text-align: center; 
+  text-shadow: 0 0 10px rgba(0,243,255,0.5);
+  margin-bottom: 10px;
+}
+.subtitle { text-align: center; color: var(--text-muted); font-size: 18px; margin-bottom: 30px; }
+
+/* ===============================
+   NÚT BẤM (BUTTONS) - NEON STYLE
+================================= */
 button {
-  border: none; padding: 12px 20px; font-size: 14px; font-weight: bold;
-  border-radius: 8px; cursor: pointer; transition: 0.2s; color: white;
+  background: transparent;
+  border: 1px solid var(--primary-color);
+  color: var(--primary-color);
+  padding: 12px 20px; 
+  font-size: 14px; 
+  font-weight: 700;
+  font-family: 'Orbitron', sans-serif;
+  text-transform: uppercase;
+  border-radius: 4px; 
+  cursor: pointer; 
+  transition: all 0.3s ease; 
+  box-shadow: inset 0 0 5px rgba(0,243,255,0.2), 0 0 5px rgba(0,243,255,0.2);
 }
-.btn-primary { background-color: var(--primary-color); }
-.btn-primary:hover { background-color: #c71585; }
-.btn-secondary { background-color: #aaa; }
-.btn-secondary:hover { background-color: #888; }
-.btn-danger { background-color: #ff6b6b; }
-.btn-danger:hover { background-color: #ee5253; }
+button:hover {
+  background: var(--primary-color);
+  color: #000;
+  box-shadow: 0 0 15px var(--primary-color);
+}
 
-/* MÀN HÌNH HUB */
-.game-grid { display: flex; gap: 20px; justify-content: center; margin-top: 40px; }
+.btn-danger { 
+  border-color: var(--secondary-color); 
+  color: var(--secondary-color);
+  box-shadow: inset 0 0 5px rgba(255,0,127,0.2), 0 0 5px rgba(255,0,127,0.2);
+}
+.btn-danger:hover { 
+  background-color: var(--secondary-color); 
+  color: #fff;
+  box-shadow: 0 0 15px var(--secondary-color);
+}
+
+.btn-secondary {
+  border-color: var(--text-muted);
+  color: var(--text-muted);
+  box-shadow: none;
+}
+.btn-secondary:hover {
+  background: var(--text-muted);
+  color: #000;
+  box-shadow: 0 0 10px var(--text-muted);
+}
+
+/* ===============================
+   MÀN HÌNH HUB
+================================= */
+.game-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
 .game-card {
-  background: white; padding: 30px; border-radius: 15px; width: 250px;
-  text-align: center; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-  transition: transform 0.2s; border: 2px solid transparent;
+  background: var(--card-bg);
+  border: 1px solid #2a2d45;
+  padding: 30px 20px; 
+  border-radius: 12px; 
+  width: 260px;
+  text-align: center; 
+  cursor: pointer; 
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  transition: all 0.3s ease;
 }
-.game-card:hover:not(.locked) { transform: translateY(-5px); border-color: var(--primary-color); }
-.game-icon { font-size: 50px; margin-bottom: 10px; }
-.locked { opacity: 0.5; cursor: not-allowed; }
+.game-card:hover { 
+  transform: translateY(-5px); 
+  border-color: var(--primary-color); 
+  box-shadow: var(--border-glow-cyan);
+}
+.game-icon { font-size: 50px; margin-bottom: 15px; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
+.game-card h2 { color: #fff; font-size: 18px; margin-bottom: 10px; }
+.game-card p { color: var(--text-muted); font-size: 15px; margin: 0; }
 
-/* MÀN HÌNH INTRO */
+/* ===============================
+   MÀN HÌNH INTRO & LAYOUT
+================================= */
 .intro-box {
-  background: white; padding: 30px; border-radius: 15px; max-width: 600px;
-  margin: 0 auto; box-shadow: 0 5px 15px rgba(0,0,0,0.1); line-height: 1.6;
+  background: var(--panel-bg); 
+  padding: 30px; 
+  border-radius: 10px; 
+  max-width: 600px;
+  margin: 0 auto; 
+  border: 1px solid #2a2d45;
+  line-height: 1.6;
 }
-.intro-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+.intro-box h3 { color: var(--primary-color); }
+.intro-actions { display: flex; justify-content: flex-end; gap: 15px; margin-top: 25px; }
 
-/* MÀN HÌNH GAME (CHIA CỘT) */
-.game-layout { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
-.board-section { width: 500px; height: 500px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
-.info-section { width: 350px; display: flex; flex-direction: column; gap: 15px; }
+.game-layout { display: flex; gap: 25px; flex-wrap: wrap; justify-content: center; align-items: flex-start; }
+.board-section { 
+  width: 500px; height: 500px; 
+  background: var(--panel-bg);
+  border: 1px solid #2a2d45;
+  border-radius: 8px;
+  display: flex; justify-content: center; align-items: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+.info-section { width: 350px; display: flex; flex-direction: column; gap: 20px; }
 
 /* AI CHAT BOX */
-.ai-chat-box { display: flex; align-items: flex-start; gap: 10px; }
-.avatar { font-size: 40px; background: white; border-radius: 50%; padding: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);}
+.ai-chat-box { display: flex; align-items: flex-start; gap: 15px; }
+.avatar { 
+  font-size: 35px; 
+  background: #1a1a2e; 
+  border: 1px solid var(--primary-color);
+  border-radius: 50%; padding: 8px; 
+  box-shadow: inset 0 0 8px rgba(0,243,255,0.3);
+}
 .speech-bubble {
-  background: white; padding: 15px; border-radius: 15px; border-top-left-radius: 0;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1); font-size: 14px; flex: 1; color: #333; font-weight: bold;
+  background: var(--panel-bg); 
+  padding: 15px; 
+  border-radius: 10px; border-top-left-radius: 0;
+  border: 1px solid #2a2d45;
+  font-size: 15px; flex: 1; color: #fff; 
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
 
-/* LỊCH SỬ NƯỚC ĐI */
+/* LỊCH SỬ NƯỚC ĐI & LOGS */
 .history-box {
-  background: white; border-radius: 10px; padding: 15px; flex: 1;
-  display: flex; flex-direction: column; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  background: var(--panel-bg); 
+  border-radius: 10px; padding: 20px; flex: 1;
+  display: flex; flex-direction: column; 
+  border: 1px solid #2a2d45;
 }
-.history-box h3 { margin: 0 0 10px 0; font-size: 16px; color: var(--primary-color); }
+.history-box h3 { color: var(--primary-color); border-bottom: 1px solid #2a2d45; padding-bottom: 10px; }
+.history-box p { margin: 8px 0; font-size: 16px; }
 .history-list {
-  flex: 1; overflow-y: auto; max-height: 250px; font-family: monospace; font-size: 14px;
+  flex: 1; overflow-y: auto; max-height: 220px; 
+  font-family: 'Rajdhani', monospace; font-size: 16px; color: #ccc;
 }
-.history-row { display: flex; padding: 5px 0; border-bottom: 1px solid #eee; }
-.turn-num { width: 40px; color: #888; }
-.move-w, .move-b { flex: 1; font-weight: bold; }
+.history-row { display: flex; padding: 6px 0; border-bottom: 1px solid #1a1a2e; }
+.turn-num { width: 45px; color: var(--text-muted); }
+.move-w { flex: 1; color: #00f3ff; font-weight: bold; }
+.move-b { flex: 1; color: #ff007f; font-weight: bold; }
 
-.game-controls { display: flex; gap: 10px; justify-content: space-between; }
+.game-controls { display: flex; gap: 15px; justify-content: space-between; }
 
 /* MODAL GAME OVER */
 .modal {
   position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-  background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;
-  z-index: 1000;
+  background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center;
+  z-index: 1000; backdrop-filter: blur(5px);
 }
 .modal-content {
-  background: white; padding: 40px; border-radius: 15px; text-align: center;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2); max-width: 400px;
+  background: var(--panel-bg); padding: 40px; border-radius: 10px; text-align: center;
+  border: 1px solid var(--primary-color); box-shadow: var(--border-glow-cyan);
+  max-width: 400px;
 }
-.modal-content h2 { color: var(--primary-color); font-size: 30px; margin-top: 0; }
+.modal-content h2 { color: var(--primary-color); font-size: 32px; text-shadow: 0 0 10px var(--primary-color); }
+.modal-content p { font-size: 18px; margin-bottom: 25px; }
 
 /* ===============================
    GIAO DIỆN DASHBOARD THỐNG KÊ
 ================================= */
-.tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
-.tab-btn { background: #fff0f5; color: var(--primary-color); border: 2px solid var(--primary-color); }
-.tab-btn.active { background: var(--primary-color); color: white; }
+.tabs { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; }
+.tab-btn { 
+  background: transparent; color: var(--text-muted); 
+  border: 1px solid #2a2d45; font-size: 16px; padding: 10px 30px; 
+  box-shadow: none; border-radius: 4px;
+}
+.tab-btn.active { 
+  background: rgba(0, 243, 255, 0.1); 
+  color: var(--primary-color); 
+  border-color: var(--primary-color);
+  box-shadow: var(--border-glow-cyan);
+}
 
-.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
-.stat-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-.stat-card h3 { margin: 0 0 10px 0; font-size: 14px; color: #7f8c8d; text-transform: uppercase; }
-.stat-value { font-size: 28px; font-weight: bold; color: #2c3e50; margin-bottom: 5px; }
-
-.trend { font-size: 14px; padding: 3px 6px; border-radius: 4px; margin-left: 10px; font-weight: normal; }
-.trend.good { background: #d4edda; color: #155724; }
-.trend.bad { background: #f8d7da; color: #721c24; }
-.trend.neutral { background: #e2e3e5; color: #383d41; }
-
-.progress-bar { width: 100%; height: 10px; background: #ecf0f1; border-radius: 5px; overflow: hidden; margin-top: 10px; }
-.progress { height: 100%; border-radius: 5px; }
-
-/* Thanh Thắng - Hòa - Thua của Cờ vua */
-.wdl-bar { display: flex; width: 100%; height: 10px; border-radius: 5px; overflow: hidden; margin-top: 10px; }
-.wdl-bar .w { background: #27ae60; } /* Xanh: Thắng */
-.wdl-bar .d { background: #95a5a6; } /* Xám: Hòa */
-.wdl-bar .l { background: #e74c3c; } /* Đỏ: Thua */
-
-/* ===============================
-   DASHBOARD RESEARCH METRICS
-================================= */
-.tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 30px; }
-.tab-btn { background: var(--panel-bg); color: var(--primary-color); border: 2px solid var(--primary-color); font-size: 16px; padding: 10px 30px; }
-.tab-btn.active { background: var(--primary-color); color: white; }
-
-.dash-title { color: #555; border-bottom: 2px solid #eee; padding-bottom: 5px; margin-bottom: 15px; font-size: 16px; text-transform: uppercase; }
+.dash-title { color: var(--text-muted); border-bottom: 1px solid #2a2d45; padding-bottom: 8px; margin-bottom: 20px; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; }
 
 .stats-grid { display: grid; gap: 20px; }
 .grid-4 { grid-template-columns: repeat(4, 1fr); }
 .grid-3 { grid-template-columns: repeat(3, 1fr); }
 .grid-2 { grid-template-columns: repeat(2, 1fr); }
 
-.stat-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-.stat-label { font-size: 13px; color: #7f8c8d; text-transform: uppercase; font-weight: bold; margin-bottom: 8px; }
-.stat-value { font-size: 28px; font-weight: 900; color: #2c3e50; display: flex; align-items: center; }
+.stat-card { 
+  background: var(--panel-bg); padding: 25px; border-radius: 8px; 
+  border: 1px solid #1a1a2e; box-shadow: 0 4px 10px rgba(0,0,0,0.5); 
+}
+.stat-label { font-size: 14px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 10px; font-family: 'Orbitron', sans-serif;}
+.stat-value { font-size: 32px; font-weight: 700; color: #fff; display: flex; align-items: center; }
 
-.trend { font-size: 12px; padding: 3px 8px; border-radius: 4px; margin-left: 10px; font-weight: bold; vertical-align: middle; }
-.trend.good { background: #d4edda; color: #155724; }
-.trend.bad { background: #f8d7da; color: #721c24; }
-.trend.neutral { background: #e2e3e5; color: #383d41; }
+.trend { font-size: 13px; padding: 4px 8px; border-radius: 4px; margin-left: 10px; font-weight: 600; font-family: 'Rajdhani', sans-serif;}
+.trend.good { background: rgba(0, 255, 0, 0.1); color: #00ff00; border: 1px solid #00ff00; }
+.trend.bad { background: rgba(255, 0, 127, 0.1); color: #ff007f; border: 1px solid #ff007f; }
+.trend.neutral { background: rgba(255, 255, 255, 0.1); color: #aaa; border: 1px solid #666; }
 
-.wdl-bar { display: flex; width: 100%; height: 12px; border-radius: 6px; overflow: hidden; margin-top: 12px; }
-.wdl-bar .w { background: #27ae60; transition: width 0.3s; }
-.wdl-bar .d { background: #95a5a6; transition: width 0.3s; }
-.wdl-bar .l { background: #e74c3c; transition: width 0.3s; }
+/* Thanh Thắng - Hòa - Thua */
+.wdl-bar { display: flex; width: 100%; height: 8px; border-radius: 4px; overflow: hidden; margin-top: 15px; background: #222; }
+.wdl-bar .w { background: #00f3ff; transition: width 0.3s; box-shadow: 0 0 5px #00f3ff;}
+.wdl-bar .d { background: #8b9bb4; transition: width 0.3s; }
+.wdl-bar .l { background: #ff007f; transition: width 0.3s; box-shadow: 0 0 5px #ff007f;}
 
-/* Distribution Bars (Move quality, Cause of Death, Directions) */
-.distribution-row { display: flex; align-items: center; margin-top: 8px; font-size: 13px; color: #333; }
-.d-label { width: 90px; font-weight: bold; }
-.d-bar { flex: 1; height: 8px; background: #ecf0f1; border-radius: 4px; margin: 0 10px; overflow: hidden; }
-.d-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
+/* Distribution Bars */
+.distribution-row { display: flex; align-items: center; margin-top: 10px; font-size: 15px; color: #ccc; font-weight: 600; }
+.d-label { width: 90px; }
+.d-bar { flex: 1; height: 6px; background: #222; border-radius: 3px; margin: 0 15px; overflow: hidden; }
+.d-fill { height: 100%; border-radius: 3px; transition: width 0.3s; box-shadow: 0 0 5px currentColor; }

@@ -26,3 +26,10 @@ typing_extensions==4.15.0
 tzdata==2026.2
 uvicorn==0.48.0
 wheel==0.47.0
+fastapi
+uvicorn
+scikit-learn
+numpy
+pandas
+chess
+joblib
