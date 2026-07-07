@@ -55,7 +55,52 @@ function renderHistory() {
     moveHistoryEl.scrollTop = moveHistoryEl.scrollHeight;
 }
 
-// Hàm này KHÔNG CHỨA saveTelemetry nữa để ngăn xung đột
+// HÀM TRỌNG TÀI KỸ THUẬT - ĐÃ VÁ LỖI SOFT-LOCK
+function processTKO(): boolean {
+    const fen = game.fen().split(' ')[0];
+    const pieceValues: Record<string, number> = { 'p': 1, 'n': 3, 'b': 3, 'r': 5, 'q': 9 };
+    let wScore = 0, bScore = 0;
+    
+    for (let i = 0; i < fen.length; i++) {
+        const c = fen[i];
+        if (pieceValues[c.toLowerCase()]) {
+            if (c === c.toLowerCase()) bScore += pieceValues[c];
+            else wScore += pieceValues[c.toLowerCase()];
+        }
+    }
+    
+    let resultMsg = "";
+    
+    // Đang hơn từ 3 điểm trở lên (1 con Mã) -> Xử thắng Knockout
+    if (Math.abs(wScore - bScore) >= 3) {
+        const isWhiteWin = wScore > bScore;
+        resultMsg = isWhiteWin ? "Trắng Thắng TKO (Máy chủ rớt mạng)!" : "Đen Thắng TKO (Máy chủ rớt mạng)!";
+        
+        if (isWhiteWin) {
+            if (isAiVsAi) realStats.chess.w_wins++;
+            realStats.chess.b_losses++;
+        } else {
+            realStats.chess.b_wins++;
+            if (isAiVsAi) realStats.chess.w_losses++;
+        }
+    } else {
+        // Điểm ngang bằng nhưng Server rớt -> Ép HÒA KỸ THUẬT
+        resultMsg = "Hòa Kỹ Thuật (Máy chủ phản hồi quá chậm)!";
+        if (isAiVsAi) realStats.chess.w_draws++;
+        realStats.chess.b_draws++;
+    }
+    
+    // BẮT BUỘC hiện Popup để mở khóa Game, không để bị treo
+    ground.set({ movable: { color: undefined } });
+    document.getElementById('modal-result-desc')!.innerText = resultMsg; 
+    modalGameOver.classList.remove('hidden'); 
+    aiChatText.innerText = `Game Over: ${resultMsg}`;
+    
+    saveTelemetry(); // Lưu JSON Data
+    isAiVsAi = false;
+    return true;
+}
+
 function checkGameOver() {
     if (game.isGameOver()) {
         ground.set({ movable: { color: undefined } });
@@ -90,9 +135,8 @@ async function onUserMove(orig: Key, dest: Key) {
     game.move({ from: orig, to: dest, promotion: 'q' }); 
     renderHistory(); 
     
-    // KIỂM TRA GAME OVER TRƯỚC: Nếu Người chơi chiếu bí AI
     if (checkGameOver()) {
-        saveTelemetry(); // Lưu Database 1 lần duy nhất rồi dừng luôn
+        saveTelemetry(); 
         return; 
     }
     
@@ -107,6 +151,11 @@ async function onUserMove(orig: Key, dest: Key) {
         });
         const data = await res.json();
         
+        if (data.game_over) {
+            if (!checkGameOver()) processTKO();
+            return;
+        }
+        
         if (data.move) {
             realStats.chess.b_totalMoves++; 
             realStats.chess.b_inferenceTimeMs += data.inference_time_ms;
@@ -120,19 +169,19 @@ async function onUserMove(orig: Key, dest: Key) {
             renderHistory(); 
             aiChatText.innerText = `Inference latency: ${data.inference_time_ms} ms.`;
             
-            // KIỂM TRA GAME OVER SAU CÙNG: Nếu AI chiếu bí Người chơi
             if (checkGameOver()) {
-                saveTelemetry(); // Lưu Database 1 lần duy nhất rồi dừng luôn
+                saveTelemetry(); 
                 return; 
             }
             
-            saveTelemetry(); // Nếu game còn tiếp tục, lưu tiến trình bình thường
+            saveTelemetry(); 
             ground.set({ movable: { color: 'white', dests: getValidMoves() } });
         } else {
-            aiChatText.innerText = `Lỗi: AI Đen không tìm được nước đi!`;
+            throw new Error("Dữ liệu lỗi");
         }
     } catch (error) { 
-        aiChatText.innerText = "Mất kết nối Server hoặc AI lỗi!"; 
+        // LỖI MẠNG HOẶC TIMEOUT SẼ NHẢY THẲNG VÀO ĐÂY, KÍCH HOẠT HÒA/TKO
+        processTKO(); 
     }
 }
 
@@ -162,6 +211,11 @@ document.getElementById('btn-auto-ai')?.addEventListener('click', async () => {
             });
             const data = await res.json();
             
+            if (data.game_over) {
+                if (!checkGameOver()) processTKO();
+                break;
+            }
+            
             if (data.move) {
                 if (currentColor === 'black') { 
                     realStats.chess.b_totalMoves++; 
@@ -184,22 +238,20 @@ document.getElementById('btn-auto-ai')?.addEventListener('click', async () => {
                 ground.set({ fen: game.fen(), lastMove: [data.move.substring(0,2) as Key, data.move.substring(2,4) as Key] });
                 renderHistory(); 
                 
-                // KIỂM TRA GAME OVER NGAY SAU KHI VỪA ĐI XONG
                 if (checkGameOver()) {
-                    saveTelemetry(); // Lưu 1 lần duy nhất rồi thoái lui hoàn toàn!
+                    saveTelemetry();
                     break; 
                 }
                 
-                saveTelemetry(); // Lưu tiến trình
+                saveTelemetry(); 
                 currentColor = currentColor === 'white' ? 'black' : 'white'; 
                 await new Promise(r => setTimeout(r, 600)); 
             } else {
-                aiChatText.innerText = `Lỗi: AI ${currentColor} không tìm được nước đi!`;
-                isAiVsAi = false;
-                break;
+                throw new Error("Dữ liệu lỗi");
             }
         } catch (error) { 
-            aiChatText.innerText = "Mất kết nối Server hoặc AI lỗi!"; 
+            // KHI QUÁ TẢI TIMEOUT, CHỐT HÒA/THẮNG LUÔN, BUNG POPUP
+            processTKO(); 
             isAiVsAi = false;
             break; 
         }

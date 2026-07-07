@@ -1,86 +1,144 @@
 {
   "chess": {
-    "w_wins": 4,
+    "w_wins": 10,
     "w_draws": 0,
     "w_losses": 0,
-    "w_totalMoves": 361,
-    "w_totalTimeMs": 316321.23,
-    "w_nodesEvaluated": 1266764,
+    "w_totalMoves": 571,
+    "w_totalTimeMs": 502586.5999999996,
+    "w_nodesEvaluated": 1986488,
     "w_maxDepth": 6,
-    "w_alphaBetaPruningRate": 57.38114036006271,
-    "w_heuristicVariance": 4.326029001131099,
-    "w_heuristicAccuracy": 90.70652927896887,
+    "w_alphaBetaPruningRate": 45.82465307246028,
+    "w_heuristicVariance": 4.2201076622676394,
+    "w_heuristicAccuracy": 97.88247477619483,
     "b_wins": 0,
     "b_draws": 0,
-    "b_losses": 4,
-    "b_totalMoves": 354,
-    "b_inferenceTimeMs": 110674.36000000003,
-    "b_crossEntropyLoss": 0.1961992387921816,
-    "b_predictionAccuracy": 97.47914536281469,
-    "b_softmaxConfidence": 94.02761530771198,
-    "b_valuePredictionError": 0.028229308418380197
+    "b_losses": 10,
+    "b_totalMoves": 561,
+    "b_inferenceTimeMs": 143973.88999999998,
+    "b_crossEntropyLoss": 0.1398519464822784,
+    "b_predictionAccuracy": 89.58404087553056,
+    "b_softmaxConfidence": 83.48115119829814,
+    "b_valuePredictionError": 0.03703629892746898
   },
   "snake": {
-    "games": 0,
-    "totalScore": 0,
-    "totalSteps": 0,
-    "deathWall": 0,
-    "deathTail": 0,
+    "games": 36,
+    "totalScore": 106400,
+    "totalSteps": 1224,
+    "deathWall": 34,
+    "deathTail": 2,
     "deathStarve": 0,
     "epsilon": 0,
-    "tdError": 0,
-    "avgMaxQ": 0,
-    "heuristicRewardShape": 0,
-    "bestScore": 0,
-    "maxCoverage": 0,
-    "totalFoodSteps": 0,
-    "foodEaten": 0,
-    "dirUp": 0,
-    "dirDown": 0,
-    "dirLeft": 0,
-    "dirRight": 0
+    "tdError": 0.014472971651406687,
+    "avgMaxQ": 56.9305418045705,
+    "heuristicRewardShape": 0.5547235263356138,
+    "bestScore": 3000,
+    "maxCoverage": 8.25,
+    "totalFoodSteps": 1224,
+    "foodEaten": 74,
+    "dirUp": 325,
+    "dirDown": 371,
+    "dirLeft": 267,
+    "dirRight": 261
   },
   "connect4": {
-    "r_games": 3,
-    "r_wins": 3,
-    "r_totalTimeMs": 10586.200000286102,
-    "r_movesToWin": 17,
-    "r_transpositionHits": 427,
+    "r_games": 22,
+    "r_wins": 22,
+    "r_totalTimeMs": 112387.29999947548,
+    "r_movesToWin": 126,
+    "r_transpositionHits": 2944,
     "r_pat2": 0,
     "r_pat3b": 0,
     "r_pat3o": 0,
     "r_flipRate": 0,
-    "y_games": 3,
+    "y_games": 22,
     "y_wins": 0,
-    "y_simulations": 8400,
+    "y_totalTimeMs": 0,
+    "y_simulations": 59400,
+    "y_totalNodes": 148500,
+    "y_ucb1": 1.4485580171203507,
+    "y_exploreRatio": 26.568906666819096,
     "y_maxDepth": 0,
-    "y_totalNodes": 21000,
-    "y_ucb1": 1.4157029049849401,
-    "y_exploreRatio": 26.87405406300237,
     "y_predictedWinProb": 0
   },
   "flappy": {
-    "generations": 1,
-    "bestScore": 0,
-    "avgGenScore": 0,
-    "fitnessBest": 0,
-    "selectionPressure": 0.1,
-    "jumpRate": 1.502570339776406,
-    "geneticDiversityStdDev": 0.15136646417413346
+    "generations": 11,
+    "alive": 84,
+    "bestScore": 40001,
+    "avgGenScore": 14653,
+    "geneticDiversityStdDev": 0.19650649688932467,
+    "mutationRate": 0,
+    "jumpRate": 1.2567596297044956,
+    "survivalTime": 666.7,
+    "allTimeBest": 40001,
+    "overallAvg": 15719.545454545456,
+    "history": [
+      {
+        "gen": 2,
+        "best": 40001,
+        "avg": 12303
+      },
+      {
+        "gen": 3,
+        "best": 40001,
+        "avg": 11463
+      },
+      {
+        "gen": 4,
+        "best": 40001,
+        "avg": 13470
+      },
+      {
+        "gen": 5,
+        "best": 40001,
+        "avg": 13423
+      },
+      {
+        "gen": 6,
+        "best": 40001,
+        "avg": 19095
+      },
+      {
+        "gen": 7,
+        "best": 40001,
+        "avg": 19153
+      },
+      {
+        "gen": 8,
+        "best": 40001,
+        "avg": 16559
+      },
+      {
+        "gen": 9,
+        "best": 40001,
+        "avg": 18301
+      },
+      {
+        "gen": 10,
+        "best": 40001,
+        "avg": 15235
+      },
+      {
+        "gen": 11,
+        "best": 40001,
+        "avg": 14653
+      }
+    ],
+    "fitnessBest": 50850,
+    "selectionPressure": 0.1
   },
   "game2048": {
-    "games": 6,
-    "totalFinalScore": 47520,
-    "totalEmptyTiles": 21850,
-    "chanceNodes": 36404,
-    "maxNodes": 7570,
-    "effectiveBranching": 2.604570118128171,
+    "games": 22,
+    "totalFinalScore": 189904,
+    "totalEmptyTiles": 51521,
+    "reach1024": 15,
+    "reach2048": 0,
+    "reach4096": 0,
+    "chanceNodes": 90670,
+    "maxNodes": 18942,
+    "effectiveBranching": 2.630010526057009,
     "monotonicity": 0,
     "smoothness": 0,
-    "predictedEV": 10548,
-    "evError": 1.0786926459743964,
-    "reach1024": 4,
-    "reach2048": 0,
-    "reach4096": 0
+    "predictedEV": 130,
+    "evError": 0.46710175567524903
   }
 }

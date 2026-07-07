@@ -1,10 +1,8 @@
 import { showView, API_BASE_URL } from '../main';
 import { realStats, saveTelemetry } from '../dashboard';
 
-
 // ============================================================
 //  FLAPPY BIRD — GENETIC ALGORITHM
-//  Dán vào file .ts của bạn, gọi: startFlappyGA('canvas-id')
 // ============================================================
 
 // ── Helpers ──────────────────────────────────────────────────
@@ -24,7 +22,7 @@ interface Config {
 }
 
 const cfg: Config = {
-  population:   1,
+  population:   100, 
   mutationRate: 0.15,
   speed:        2,
   eliteRatio:   0.2,
@@ -58,26 +56,30 @@ const PIPE_W   = 54;
 const GAP      = 130;
 const PIPE_SPD = 2.3;
 
-// ── Flappy AI weights ───────────────────────────────────────
-type FlappyWeights = number[];
+// ── NeuralNet ─────────────────────────────────────────────────
+class NeuralNet {
+  w: number[];
 
-function createInitialFlappyWeights(): FlappyWeights {
-  return Array.from({ length: 6 }, () => randn() * 1.5);
-}
+  constructor(weights?: number[]) {
+    this.w = weights ? [...weights] : Array.from({ length: 6 }, () => randn() * 1.5);
+  }
 
-function evaluateFlappyAction(weights: FlappyWeights, dy: number, dist: number, vel: number, gapCenter: number): boolean {
-  return (
-    weights[0] * dy +
-    weights[1] * dist +
-    weights[2] * vel +
-    weights[3] +
-    weights[4] * gapCenter +
-    weights[5] * vel * vel * Math.sign(vel)
-  ) > 0;
-}
+  forward(dy: number, dist: number, vel: number, gapCenter: number): boolean {
+    return (
+      this.w[0] * dy +
+      this.w[1] * dist +
+      this.w[2] * vel +
+      this.w[3] +
+      this.w[4] * gapCenter +
+      this.w[5] * vel * vel * Math.sign(vel)
+    ) > 0;
+  }
 
-function mutateFlappyWeights(weights: FlappyWeights, rate: number): FlappyWeights {
-  return weights.map(x => (Math.random() < rate ? x + randn() * 0.5 : x));
+  mutate(rate: number): NeuralNet {
+    return new NeuralNet(this.w.map(x => (Math.random() < rate ? x + randn() * 0.5 : x)));
+  }
+
+  clone(): NeuralNet { return new NeuralNet(this.w); }
 }
 
 // ── Pipe ──────────────────────────────────────────────────────
@@ -97,12 +99,10 @@ class Pipe {
   draw(ctx: CanvasRenderingContext2D): void {
     const { x, gapY } = this;
 
-    // Bóng
     ctx.fillStyle = 'rgba(0,0,0,0.15)';
     ctx.fillRect(x + 4, 0,         PIPE_W, gapY);
     ctx.fillRect(x + 4, gapY + GAP, PIPE_W, H - gapY - GAP);
 
-    // Thân ống
     const g = ctx.createLinearGradient(x, 0, x + PIPE_W, 0);
     g.addColorStop(0,   '#4caf50');
     g.addColorStop(0.4, '#66bb6a');
@@ -111,12 +111,10 @@ class Pipe {
     ctx.fillRect(x, 0,         PIPE_W, gapY);
     ctx.fillRect(x, gapY + GAP, PIPE_W, H - gapY - GAP);
 
-    // Miệng ống
     ctx.fillStyle = '#388e3c';
     ctx.fillRect(x - 5, gapY - 18,       PIPE_W + 10, 20);
     ctx.fillRect(x - 5, gapY + GAP - 2,  PIPE_W + 10, 20);
 
-    // Highlight
     ctx.fillStyle = 'rgba(255,255,255,0.12)';
     ctx.fillRect(x + 6, 0,         8, gapY);
     ctx.fillRect(x + 6, gapY + GAP, 8, H - gapY - GAP);
@@ -133,10 +131,10 @@ class Bird {
   angle   = 0;
   wingAnim = 0;
   color: string;
-  weights: FlappyWeights;
+  net: NeuralNet;
 
-  constructor(weights?: FlappyWeights) {
-    this.weights = weights ? [...weights] : createInitialFlappyWeights();
+  constructor(net?: NeuralNet) {
+    this.net   = net ?? new NeuralNet();
     const hue  = Math.floor(Math.random() * 360);
     this.color = `hsl(${hue},70%,60%)`;
   }
@@ -156,7 +154,6 @@ class Bird {
 
     if (this.y - BIRD_R < 0 || this.y + BIRD_R > H) { this.alive = false; return; }
 
-    // Ống gần nhất phía trước
     let near: Pipe | null = null;
     let nearDist = Infinity;
     for (const p of pipes) {
@@ -166,10 +163,9 @@ class Bird {
 
     if (near) {
       const gc = near.gapY + GAP / 2;
-      if (evaluateFlappyAction(this.weights, (this.y - gc) / H, nearDist / W, this.vy / 10, gc / H)) {
+      if (this.net.forward((this.y - gc) / H, nearDist / W, this.vy / 10, gc / H)) {
         this.vy = JUMP;
       }
-      // Va chạm
       if (BIRD_X + BIRD_R > near.x && BIRD_X - BIRD_R < near.x + PIPE_W) {
         if (this.y - BIRD_R < near.gapY || this.y + BIRD_R > near.gapY + GAP) {
           this.alive = false; return;
@@ -179,6 +175,10 @@ class Bird {
 
     this.score++;
     this.fitness = this.score;
+
+    if (this.score > 40000) {
+        this.alive = false;
+    }
   }
 
   draw(ctx: CanvasRenderingContext2D): void {
@@ -187,22 +187,18 @@ class Bird {
     ctx.translate(BIRD_X, this.y);
     ctx.rotate((this.angle * Math.PI) / 180);
 
-    // Thân
     ctx.fillStyle = this.color;
     ctx.beginPath(); ctx.ellipse(0, 0, BIRD_R, BIRD_R - 2, 0, 0, Math.PI * 2); ctx.fill();
 
-    // Cánh
     const wf = Math.sin(this.wingAnim * 0.25) * 5;
     ctx.beginPath(); ctx.ellipse(-4, wf, 9, 5, -0.4, 0, Math.PI * 2); ctx.fill();
     ctx.strokeStyle = 'rgba(0,0,0,0.2)'; ctx.lineWidth = 1; ctx.stroke();
 
-    // Mắt
     ctx.fillStyle = 'white';
     ctx.beginPath(); ctx.arc(5, -3, 5, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = '#111';
     ctx.beginPath(); ctx.arc(6, -3, 2.5, 0, Math.PI * 2); ctx.fill();
 
-    // Mỏ
     ctx.fillStyle = '#f5a623';
     ctx.beginPath();
     ctx.moveTo(BIRD_R - 1, 0); ctx.lineTo(BIRD_R + 8, 2); ctx.lineTo(BIRD_R - 1, 5);
@@ -213,15 +209,15 @@ class Bird {
 }
 
 // ── Genetic Algorithm ─────────────────────────────────────────
-function evolvePopulation(birds: Bird[]): FlappyWeights[] {
+function evolvePopulation(birds: Bird[]): NeuralNet[] {
   const sorted = [...birds].sort((a, b) => b.fitness - a.fitness);
   const topN   = Math.max(2, Math.floor(sorted.length * cfg.eliteRatio));
   const elites = sorted.slice(0, topN);
 
-  const next: FlappyWeights[] = [elites[0].weights.slice()];
+  const next: NeuralNet[] = [elites[0].net.clone()];
   while (next.length < cfg.population) {
     const parent = elites[Math.floor(Math.random() * elites.length)];
-    next.push(mutateFlappyWeights(parent.weights, cfg.mutationRate));
+    next.push(parent.net.mutate(cfg.mutationRate));
   }
   return next;
 }
@@ -247,22 +243,13 @@ function drawBackground(ctx: CanvasRenderingContext2D): void {
 }
 
 // ── Main entry ────────────────────────────────────────────────
-/**
- * Khởi động Flappy Bird GA trên một <canvas> có sẵn.
- *
- * @param canvasId   - id của thẻ <canvas> trong HTML của bạn
- * @param onLog      - callback nhận log text (tuỳ chọn)
- * @param onStats    - callback nhận stats mỗi frame (tuỳ chọn)
- * @param initialNets - mạng neural để bắt đầu (tuỳ chọn, nếu không thì random)
- * @param initialAllTimeBest - best score từ lần chơi trước (tuỳ chọn)
- */
 export function startFlappyGA(
   canvasId: string,
   onLog?:   (msg: string) => void,
   onStats?: (s: { generation: number; alive: number; best: number; allTimeBest: number }) => void,
-  initialNets?: FlappyWeights[] | null,
+  initialNets?: NeuralNet[] | null,
   initialAllTimeBest?: number
-): () => void {
+): () => Promise<void> {
 
   const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
   if (!canvas) throw new Error(`Canvas #${canvasId} không tìm thấy`);
@@ -281,12 +268,12 @@ export function startFlappyGA(
 
   function log(msg: string): void { onLog?.(msg); }
 
-  function initPop(nets?: FlappyWeights[]): void {
+  function initPop(nets?: NeuralNet[]): void {
     birds = [];
     if (nets?.length) {
       for (let i = 0; i < cfg.population; i++)
-        birds.push(new Bird(mutateFlappyWeights(nets[i % nets.length], cfg.mutationRate)));
-      birds[0] = new Bird(nets[0].slice());
+        birds.push(new Bird(nets[i % nets.length].mutate(cfg.mutationRate)));
+      birds[0] = new Bird(nets[0].clone());
     } else {
       for (let i = 0; i < cfg.population; i++) birds.push(new Bird());
     }
@@ -302,18 +289,31 @@ export function startFlappyGA(
     const best    = bestBird.fitness;
     const avg     = Math.round(birds.reduce((s, b) => s + b.fitness, 0) / birds.length);
 
-    // TRACKING TELEMETRY (Cập nhật điểm)
-    realStats.flappy.bestScore = Math.max(realStats.flappy.bestScore, best);
+    const prevAvg = realStats.flappy.overallAvg || 0;
+    realStats.flappy.overallAvg = prevAvg + (avg - prevAvg) / generation;
+
+    realStats.flappy.generations = generation;
+    realStats.flappy.bestScore = best;
     realStats.flappy.avgGenScore = avg;
-    realStats.flappy.fitnessBest = bestBird.fitness * 50; // Tính điểm Fitness
+    realStats.flappy.survivalTime = +(frame / 60).toFixed(1);
 
     if (best > allTimeBest) {
       allTimeBest = best;
       log(`🏆 Gen ${generation} → best=${best} | avg=${avg}`);
-      void saveFlappyWeights(bestBird.weights, generation, best, allTimeBest);
+      void saveFlappyWeights(bestBird.net.w, generation, best, allTimeBest);
     } else {
       log(`⚡ Gen ${generation} → best=${best} | avg=${avg}`);
     }
+    
+    realStats.flappy.allTimeBest = allTimeBest;
+
+    if (!realStats.flappy.history) realStats.flappy.history = [];
+    realStats.flappy.history.push({ gen: generation, best: best, avg: avg });
+    if (realStats.flappy.history.length > 10) {
+        realStats.flappy.history.shift(); 
+    }
+
+    saveTelemetry(); // Lưu lên JSON khi thế hệ CHẾT THẬT SỰ
 
     const nets = evolvePopulation(birds);
     generation++;
@@ -323,7 +323,6 @@ export function startFlappyGA(
   function tick(): void {
     frame++;
 
-    // Sinh ống mới
     if (pipes.length < 4) {
       const lastX = Math.max(...pipes.map(p => p.x));
       if (lastX < W + 200) pipes.push(new Pipe(lastX + 250 + Math.random() * 80));
@@ -349,7 +348,6 @@ export function startFlappyGA(
     for (const p of pipes) p.draw(ctx);
     for (const b of birds) b.draw(ctx);
 
-    // HUD nhanh
     const alive = birds.filter(b => b.alive).length;
     ctx.fillStyle = 'rgba(0,0,0,0.45)';
     ctx.fillRect(6, 6, 360, 28);
@@ -360,7 +358,6 @@ export function startFlappyGA(
     animId = requestAnimationFrame(loop);
   }
 
-  // Khởi động - khởi tạo ngay lập tức để vẽ được
   if (initialNets && initialNets.length > 0) {
     initPop(initialNets);
     log('💾 Dùng dữ liệu đã lưu để tiếp tục tiến hóa');
@@ -370,17 +367,37 @@ export function startFlappyGA(
   }
   loop();
 
-  // Trả về hàm cleanup để dừng khi cần
-  return () => cancelAnimationFrame(animId);
+  // FIX LỖI ĐỒNG BỘ: Chuyển hàm cleanup thành async để đợi quá trình POST dữ liệu hoàn tất
+  return async () => {
+    running = false;
+    const sorted = [...birds].sort((a, b) => b.fitness - a.fitness);
+    
+    if (sorted.length > 0 && frame > 0) {
+        const bestBird = sorted[0];
+        const best = bestBird.fitness;
+
+        if (best > allTimeBest) {
+            allTimeBest = best;
+            void saveFlappyWeights(bestBird.net.w, generation, best, best);
+            realStats.flappy.allTimeBest = allTimeBest;
+            realStats.flappy.bestScore = Math.max(realStats.flappy.bestScore, best);
+        }
+        
+        // CHỈ LƯU LẠI THẾ HỆ ĐÃ HOÀN THÀNH. Nếu đang chạy Gen 3 mà ngắt, ghi nhận là Gen 2
+        const completedGen = generation > 1 ? generation - 1 : 1;
+        realStats.flappy.generations = completedGen;
+
+        // Bỏ qua hoàn toàn việc nhét Gen đang chạy dở vào History để không làm hỏng biểu đồ!
+        
+        await saveTelemetry(); // Dừng hệ thống, đảm bảo File JSON được ghi xong xuôi
+    }
+    cancelAnimationFrame(animId);
+  };
 }
 
-// ── API điều khiển (tuỳ chọn dùng) ──────────────────────────
-export function setSpeed(v: number): void        { cfg.speed        = v; }
-export function setPopulation(v: number): void   { cfg.population   = v; }
-export function setMutationRate(v: number): void { cfg.mutationRate = v; }
 
 // ── UI integration ─────────────────────────────────────────
-let activeFlappyStop: (() => void) | null = null;
+let activeFlappyStop: (() => Promise<void> | void) | null = null;
 
 function setTextById(id: string, text: string): void {
   const element = document.getElementById(id);
@@ -391,12 +408,9 @@ function updateFlappyStats(generation: number, alive: number): void {
   setTextById('flappy-gen', generation.toString());
   setTextById('flappy-alive', `${alive}/${cfg.population}`);
   
-  // TRACKING TELEMETRY (Bắn data vào Dashboard)
-  realStats.flappy.generations = generation;
+  realStats.flappy.alive = alive; // Đồng bộ số cá thể đang sống để Dashboard gọi ra được
   realStats.flappy.jumpRate = 1.2 + Math.random() * 0.5;
   realStats.flappy.geneticDiversityStdDev = 0.15 + (Math.random() * 0.05);
-  
-  saveTelemetry(); 
 }
 
 function setFlappyStatus(message: string): void {
@@ -404,18 +418,19 @@ function setFlappyStatus(message: string): void {
 }
 
 async function startFlappyRun(): Promise<void> {
-  activeFlappyStop?.();
+  if (activeFlappyStop) {
+      await activeFlappyStop();
+  }
   setFlappyStatus('Tải dữ liệu...');
   
-  // Tải dữ liệu lưu trước nếu có
-  let initialNets: FlappyWeights[] | null = null;
+  let initialNets: NeuralNet[] | null = null;
   let initialAllTimeBest = 0;
   try {
     const res = await fetch(`${API_BASE_URL}/api/flappy/model`);
     if (res.ok) {
       const data = await res.json();
       if (data?.exists && Array.isArray(data.weights) && data.weights.length > 0) {
-        initialNets = [data.weights as FlappyWeights];
+        initialNets = [new NeuralNet(data.weights)];
         initialAllTimeBest = data.all_time_best || 0;
         setFlappyStatus('💾 Tìm thấy dữ liệu cũ, sẽ dùng cho generation này');
       }
@@ -441,9 +456,14 @@ document.getElementById('btn-start-flappy')?.addEventListener('click', () => {
   void startFlappyRun();
 });
 
-document.getElementById('btn-exit-flappy')?.addEventListener('click', () => {
-  activeFlappyStop?.();
-  activeFlappyStop = null;
+// ÉP NÚT EXIT PHẢI CHỜ TIẾN TRÌNH LƯU JSON KẾT THÚC
+document.getElementById('btn-exit-flappy')?.addEventListener('click', async () => {
+  if (activeFlappyStop) {
+      setFlappyStatus('Đang đồng bộ dữ liệu Tiến hóa lên Database...');
+      const stopFn = activeFlappyStop;
+      activeFlappyStop = null; 
+      await stopFn(); // Trọng tài bắt hệ thống chờ POST data xong
+  }
   showView('hub');
   setFlappyStatus('Chờ bắt đầu...');
 });

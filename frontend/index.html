@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body>
     <header class="app-header">
@@ -174,289 +175,137 @@
         </div>
       </div>
 
-      <div id="view-stats" class="view-container hidden" style="max-width: 1400px; width: 100%;">
-        <h1>SYSTEM TELEMETRY 📊</h1>
+      <div id="view-stats" class="view-container hidden">
+        <button id="btn-back-hub-stats" class="btn-back">Quay lại Hub</button>
+        <h2 class="view-title" style="margin-top: 20px;">SYSTEM TELEMETRY 📊</h2>
+
         <div class="tabs">
-          <button class="tab-btn active" id="tab-chess">Chess</button>
-          <button class="tab-btn" id="tab-snake">Snake</button>
-          <button class="tab-btn" id="tab-connect4">Connect 4</button>
-          <button class="tab-btn" id="tab-flappy">Flappy Bird</button>
-          <button class="tab-btn" id="tab-2048">2048</button>
-        </div>
-        
-        <div id="stats-chess" class="stats-panel">
-          <div class="game-layout" style="gap: 20px;">
-            <div style="flex: 1; border: 1px solid #00f3ff; border-radius: 8px; padding: 15px; background: rgba(0,243,255,0.05);">
-              <h3 style="color: #00f3ff; text-align: center;">WHITE: MINIMAX (ALPHA-BETA)</h3>
-              <div class="stats-grid grid-2">
-                <div class="stat-card">
-                  <div class="stat-label">Hiệu suất (W / D / L)</div>
-                  <div class="stat-value" id="chess-w-wdl">0 / 0 / 0</div>
-                </div>
-                <div class="stat-card">
-                  <div class="stat-label">Thời gian / Nước đi</div>
-                  <div class="stat-value"><span id="chess-w-time">0</span> <span class="trend neutral">ms</span></div>
-                </div>
-                <div class="stat-card">
-                  <div class="stat-label">Nodes Đã Duyệt</div>
-                  <div class="stat-value" id="chess-w-nodes">0</div>
-                </div>
-                <div class="stat-card">
-                  <div class="stat-label">Max Depth</div>
-                  <div class="stat-value"><span id="chess-w-depth">0</span> <span class="trend good">plies</span></div>
-                </div>
-                <div class="stat-card">
-                  <div class="stat-label">Tỉ lệ cắt Alpha-Beta</div>
-                  <div class="stat-value" id="chess-w-pruning">0%</div>
-                </div>
-                <div class="stat-card">
-                  <div class="stat-label">Độ lệch Heuristic</div>
-                  <div class="stat-value" id="chess-w-variance">0.0</div>
-                </div>
-              </div>
-              <div class="stat-card" style="margin-top: 20px;">
-                <div class="stat-label">Độ chính xác Heuristic (vs Ground Truth)</div>
-                <div class="progress-bar"><div id="chess-w-accuracy" class="progress w" style="width: 0%;"></div></div>
-                <div style="text-align: right; font-size: 12px; margin-top: 5px;" id="chess-w-acc-text">0%</div>
-              </div>
-            </div>
-
-            <div style="flex: 1; border: 1px solid #ff007f; border-radius: 8px; padding: 15px; background: rgba(255,0,127,0.05);">
-              <h3 style="color: #ff007f; text-align: center;">BLACK: MULTI-LAYER PERCEPTRON</h3>
-              <div class="stats-grid grid-2">
-                <div class="stat-card">
-                  <div class="stat-label">Hiệu suất (W / D / L)</div>
-                  <div class="stat-value" id="chess-b-wdl">0 / 0 / 0</div>
-                </div>
-                <div class="stat-card">
-                  <div class="stat-label">Inference Time O(1)</div>
-                  <div class="stat-value"><span id="chess-b-inf">0.0</span> <span class="trend neutral">ms</span></div>
-                </div>
-                <div class="stat-card">
-                  <div class="stat-label">Cross-Entropy Loss</div>
-                  <div class="stat-value" id="chess-b-loss">0.0000</div>
-                </div>
-                <div class="stat-card">
-                  <div class="stat-label">Softmax Confidence</div>
-                  <div class="stat-value"><span id="chess-b-conf">0</span><span class="trend good">%</span></div>
-                </div>
-                <div class="stat-card">
-                  <div class="stat-label">Value Pred Error</div>
-                  <div class="stat-value" id="chess-b-error">±0.00</div>
-                </div>
-                <div class="stat-card">
-                  <div class="stat-label">Nước đi TB/Ván</div>
-                  <div class="stat-value" id="chess-b-moves">0</div>
-                </div>
-              </div>
-              <div class="stat-card" style="margin-top: 20px;">
-                <div class="stat-label">Prediction Accuracy</div>
-                <div class="progress-bar"><div id="chess-b-accuracy" class="progress l" style="width: 0%;"></div></div>
-                <div style="text-align: right; font-size: 12px; margin-top: 5px;" id="chess-b-acc-text">0%</div>
-              </div>
-            </div>
-          </div>
+            <button id="tab-chess" class="tab-btn active">CHESS</button>
+            <button id="tab-snake" class="tab-btn">SNAKE</button>
+            <button id="tab-connect4" class="tab-btn">CONNECT 4</button>
+            <button id="tab-flappy" class="tab-btn">FLAPPY BIRD</button>
+            <button id="tab-2048" class="tab-btn">2048</button>
         </div>
 
-        <div id="stats-snake" class="stats-panel hidden">
-          <h3 class="dash-title">Hiệu suất Gameplay & Học Tập</h3>
-          <div class="stats-grid grid-4">
+        <div id="stats-chess" class="stats-grid grid-3">
             <div class="stat-card">
-              <div class="stat-label">Điểm TB (Táo)</div>
-              <div class="stat-value" id="snake-avg-score">0.0</div>
+                <div class="stat-label">HIỆU SUẤT TỔNG THỂ</div>
+                <div class="chart-container"><canvas id="chart-chess-wdl"></canvas></div>
             </div>
-            <div class="stat-card">
-              <div class="stat-label">Số bước TB/Ván</div>
-              <div class="stat-value" id="snake-avg-steps">0</div>
+            <div class="stat-card" style="border-color: #00f3ff;">
+                <div class="stat-label" style="color: #00f3ff;">HEURISTICS: MINIMAX (TRẮNG)</div>
+                <p>Nodes đã duyệt: <b id="c-w-nodes">0</b></p>
+                <p>Thời gian TB/Nước: <b id="c-w-time">0</b> ms</p>
+                <p>Max Depth: <b id="c-w-depth">0</b></p>
+                <p>Tỉ lệ cắt tỉa A-B: <b id="c-w-prun">0</b>%</p>
+                <p>Phương sai Heuristic: <b id="c-w-var">0</b></p>
+                <p>Độ chính xác Heuristic: <b id="c-w-hacc">0</b>%</p>
             </div>
-            <div class="stat-card">
-              <div class="stat-label">Step-per-Apple Ratio</div>
-              <div class="stat-value" id="snake-ratio">0.0</div>
+            <div class="stat-card" style="border-color: #ff007f;">
+                <div class="stat-label" style="color: #ff007f;">PREDICTION: MLP (ĐEN)</div>
+                <p>Cross-Entropy Loss: <b id="c-b-loss">0</b></p>
+                <p>Softmax Confidence: <b id="c-b-conf">0</b>%</p>
+                <p>Độ trễ AI (Latency): <b id="c-b-time">0</b> ms</p>
+                <p>Độ chính xác (Accuracy): <b id="c-b-acc">0</b>%</p>
+                <p>Sai số dự đoán (VPE): <b id="c-b-vpe">0</b></p>
             </div>
-            <div class="stat-card">
-              <div class="stat-label">Epsilon Decay (ε)</div>
-              <div class="stat-value" id="snake-epsilon" style="color:#ff007f;">0.000</div>
-            </div>
-          </div>
-
-          <h3 class="dash-title" style="margin-top: 20px;">Predicted Metrics & Heuristics</h3>
-          <div class="stats-grid grid-3">
-            <div class="stat-card">
-              <div class="stat-label">Sai số TD-Error</div>
-              <div class="stat-value" id="snake-td-error">0.000</div>
-              <p style="font-size:12px; color:#888; margin-top:5px;">Lệch chuẩn giữa Q-Predict và Reward thực tế</p>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Avg Max Q-Value</div>
-              <div class="stat-value" id="snake-max-q">0.0</div>
-              <p style="font-size:12px; color:#888; margin-top:5px;">Mức độ tự tin của AI vào chuỗi hành động</p>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Reward Shaping (Manhattan)</div>
-              <div class="stat-value" id="snake-reward-shape">±0.0</div>
-              <p style="font-size:12px; color:#888; margin-top:5px;">Điểm Heuristic cộng/trừ định hướng</p>
-            </div>
-          </div>
-
-          <div class="stat-card" style="margin-top: 20px;">
-            <div class="stat-label">Nguyên nhân Tử vong</div>
-            <div class="distribution-row"><span class="d-label">Đâm Tường</span><div class="d-bar"><div class="d-fill w" id="snake-death-wall" style="width: 0%;"></div></div><span id="txt-s-wall">0%</span></div>
-            <div class="distribution-row"><span class="d-label">Cắn Đuôi</span><div class="d-bar"><div class="d-fill d" id="snake-death-tail" style="width: 0%;"></div></div><span id="txt-s-tail">0%</span></div>
-          </div>
         </div>
 
-        <div id="stats-connect4" class="stats-panel hidden">
-          <div class="game-layout" style="gap: 20px;">
-            <div style="flex: 1; border: 1px solid #e74c3c; border-radius: 8px; padding: 15px; background: rgba(231,76,60,0.05);">
-              <h3 style="color: #e74c3c; text-align: center;">RED: MINIMAX (ALPHA-BETA)</h3>
-              <div class="stats-grid grid-2">
-                <div class="stat-card">
-                  <div class="stat-label">Winrate (Đi trước)</div>
-                  <div class="stat-value" id="c4-r-winrate">0%</div>
-                </div>
-                <div class="stat-card">
-                  <div class="stat-label">Thời gian/Lượt</div>
-                  <div class="stat-value"><span id="c4-r-time">0</span> <span class="trend neutral">ms</span></div>
-                </div>
-                <div class="stat-card">
-                  <div class="stat-label">Nước đi TB tới lúc Win</div>
-                  <div class="stat-value" id="c4-r-moves">0</div>
-                </div>
-                <div class="stat-card">
-                  <div class="stat-label">Transposition Hits</div>
-                  <div class="stat-value" id="c4-r-hits">0</div>
-                </div>
-              </div>
-              <div class="stat-card" style="margin-top: 20px;">
-                <div class="stat-label">Heuristic Pattern Scores</div>
-                <div style="font-size:14px; margin-top:10px;">Chuỗi 2 tự do: <span id="c4-r-pat2" style="color:#e74c3c; float:right;">0</span></div>
-                <div style="font-size:14px; margin-top:5px;">Chuỗi 3 chặn 1 đầu: <span id="c4-r-pat3b" style="color:#e74c3c; float:right;">0</span></div>
-                <div style="font-size:14px; margin-top:5px;">Chuỗi 3 mở 2 đầu: <span id="c4-r-pat3o" style="color:#e74c3c; float:right;">0</span></div>
-                <div style="font-size:14px; margin-top:10px; border-top:1px solid #333; padding-top:10px;">Heuristic Flip Rate (Horizon Effect): <span id="c4-r-flip" style="color:#e74c3c; float:right;">0%</span></div>
-              </div>
+        <div id="stats-snake" class="stats-grid grid-3 hidden">
+            <div class="stat-card">
+                <div class="stat-label">PHÂN TÍCH TỬ VONG</div>
+                <div class="chart-container"><canvas id="chart-snake-death"></canvas></div>
+                <p style="margin-top: 15px;">Phân bổ Hướng đi:</p>
+                <div class="chart-container" style="height: 180px;"><canvas id="chart-snake-dir"></canvas></div>
             </div>
-
-            <div style="flex: 1; border: 1px solid #f1c40f; border-radius: 8px; padding: 15px; background: rgba(241,196,15,0.05);">
-              <h3 style="color: #f1c40f; text-align: center;">YELLOW: MCTS</h3>
-              <div class="stats-grid grid-2">
-                <div class="stat-card">
-                  <div class="stat-label">Winrate (Đi sau)</div>
-                  <div class="stat-value" id="c4-y-winrate">0%</div>
-                </div>
-                <div class="stat-card">
-                  <div class="stat-label">Tổng Simulations/Lượt</div>
-                  <div class="stat-value" id="c4-y-sims">0</div>
-                </div>
-                <div class="stat-card">
-                  <div class="stat-label">Max Tree Depth</div>
-                  <div class="stat-value" id="c4-y-depth">0</div>
-                </div>
-                <div class="stat-card">
-                  <div class="stat-label">Tổng Node Khởi Tạo</div>
-                  <div class="stat-value" id="c4-y-nodes">0</div>
-                </div>
-              </div>
-              <div class="stat-card" style="margin-top: 20px;">
-                <div class="stat-label">UCB1 & Predicted Probability</div>
-                <div style="font-size:14px; margin-top:10px;">Giá trị UCB1 trung bình: <span id="c4-y-ucb1" style="color:#f1c40f; float:right;">0.00</span></div>
-                <div style="font-size:14px; margin-top:5px;">Tỉ lệ Exploitation / Exploration: <span id="c4-y-ratio" style="color:#f1c40f; float:right;">0% / 0%</span></div>
-                <div style="font-size:14px; margin-top:10px; border-top:1px solid #333; padding-top:10px;">Predicted Win Probability (V): <span id="c4-y-prob" style="color:#f1c40f; float:right;">0%</span></div>
-              </div>
+            <div class="stat-card" style="border-color: #f1c40f;">
+                <div class="stat-label" style="color: #f1c40f;">Q-LEARNING METRICS</div>
+                <p>Số Episode (Games): <b id="s-games">0</b></p>
+                <p>Điểm TB/Ván: <b id="s-avg-score">0</b></p>
+                <p>Kỷ lục (Best Score): <b id="s-best">0</b></p>
+                <p>Độ phủ không gian: <b id="s-cov">0</b>%</p>
+                <p>Tổng Táo đã ăn: <b id="s-food">0</b></p>
+                <p>Tổng Số bước (Steps): <b id="s-steps">0</b></p>
             </div>
-          </div>
+            <div class="stat-card" style="border-color: #00ff00;">
+                <div class="stat-label" style="color: #00ff00;">ALGORITHM PREDICTION</div>
+                <p>Sai số (TD-Error): <b id="s-td">0</b></p>
+                <p>Avg Max Q-Value: <b id="s-q">0</b></p>
+                <p>Khám phá (Epsilon): <b id="s-eps">0</b></p>
+                <p>Heuristic Reward Shape: <b id="s-hr">0</b></p>
+            </div>
         </div>
 
-        <div id="stats-flappy" class="stats-panel hidden">
-          <h3 class="dash-title">Tiến hóa Quần thể (Evolution Metrics)</h3>
-          <div class="stats-grid grid-3">
+        <div id="stats-connect4" class="stats-grid grid-3 hidden">
             <div class="stat-card">
-              <div class="stat-label">Số lượng Thế hệ (Gen)</div>
-              <div class="stat-value" id="flappy-gens">0</div>
+                <div class="stat-label">WIN RATE ĐỐI KHÁNG</div>
+                <div class="chart-container"><canvas id="chart-c4-win"></canvas></div>
             </div>
-            <div class="stat-card">
-              <div class="stat-label">Điểm số Cao nhất</div>
-              <div class="stat-value" id="flappy-best">0</div>
+            <div class="stat-card" style="border-color: #e74c3c;">
+                <div class="stat-label" style="color: #e74c3c;">HEURISTICS: MINIMAX (ĐỎ)</div>
+                <p>Nước đi TB/Win: <b id="c4-r-moves">0</b></p>
+                <p>Thời gian suy nghĩ TB: <b id="c4-r-time">0</b> ms</p>
+                <p>Bảng hoán vị (Hits): <b id="c4-r-hit">0</b></p>
+                <p>Pattern 2 (Pat2): <b id="c4-r-p2">0</b></p>
+                <p>Pattern 3B / 3O: <b><span id="c4-r-p3b">0</span> / <span id="c4-r-p3o">0</span></b></p>
+                <p>Tỉ lệ lật (Flip Rate): <b id="c4-r-flip">0</b>%</p>
             </div>
-            <div class="stat-card">
-              <div class="stat-label">Điểm TB Thế hệ</div>
-              <div class="stat-value" id="flappy-avg">0.0</div>
+            <div class="stat-card" style="border-color: #f1c40f;">
+                <div class="stat-label" style="color: #f1c40f;">PREDICTION: MCTS (VÀNG)</div>
+                <p>Tổng ván thi đấu: <b id="c4-y-games">0</b></p>
+                <p>Tổng Simulations: <b id="c4-y-sim">0</b></p>
+                <p>Tổng Node sinh ra: <b id="c4-y-node">0</b></p>
+                <p>Chỉ số UCB1: <b id="c4-y-ucb">0</b></p>
+                <p>Tỉ lệ Khám phá: <b id="c4-y-exp">0</b>%</p>
             </div>
-          </div>
-
-          <h3 class="dash-title" style="margin-top: 20px;">Heuristic & Prediction Data</h3>
-          <div class="stats-grid grid-4">
-            <div class="stat-card">
-              <div class="stat-label">Fitness Score (Best)</div>
-              <div class="stat-value" id="flappy-fitness">0</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Áp lực Chọn lọc</div>
-              <div class="stat-value" id="flappy-pressure">0%</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Tần suất Nhảy (Jump Rate)</div>
-              <div class="stat-value" id="flappy-jump-rate">0 <span class="trend neutral">/sec</span></div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Đa dạng Bộ Gen (Std Dev)</div>
-              <div class="stat-value" id="flappy-diversity">0.00</div>
-            </div>
-          </div>
         </div>
 
-        <div id="stats-2048" class="stats-panel hidden">
-          <h3 class="dash-title">Hiệu suất & Tìm kiếm (Expectimax)</h3>
-          <div class="stats-grid grid-4">
+        <div id="stats-flappy" class="stats-grid hidden" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
             <div class="stat-card">
-              <div class="stat-label">Điểm số TB Cuối cùng</div>
-              <div class="stat-value" id="g2048-avg-score">0</div>
+                <div class="stat-label">CURRENT GEN: <span id="f-gen-title" style="color: #00f3ff;">0</span></div>
+                <p style="font-size: 40px; color: #ff007f; font-weight: bold; text-align: center; margin: 15px 0;" id="f-alive">0/100</p>
+                <p style="text-align: center; color: #8b9bb4; border: none; padding: 0; margin-top: -10px;">Cá thể đang sống</p>
+                <p>Thời gian sinh tồn: <b id="f-surv">0.0</b> s</p>
+                <p>Tần suất nhảy (Jump): <b id="f-jump">0.0</b>%</p>
             </div>
-            <div class="stat-card">
-              <div class="stat-label">Số Ô Trống TB</div>
-              <div class="stat-value" id="g2048-empty">0.0</div>
+            
+            <div class="stat-card" style="border-color: #00ff00;">
+                <div class="stat-label" style="color: #00ff00;">OVERALL METRICS (TỔNG THỂ)</div>
+                <p>Kỷ lục mọi thời đại (Best): <b id="f-all-best" style="color: #00ff00;">0</b></p>
+                <p>Điểm TB Toàn hệ thống: <b id="f-all-avg">0.0</b></p>
+                <p>Đa dạng Gen (StdDev): <b id="f-div">0.000</b></p>
+                <p>Tỉ lệ Đột biến (Mutation): <b id="f-mut">15.0</b>%</p>
             </div>
-            <div class="stat-card">
-              <div class="stat-label">Chance / Max Nodes</div>
-              <div class="stat-value" id="g2048-nodes-ratio">0 : 0</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Branching Factor</div>
-              <div class="stat-value" id="g2048-branching">0.0</div>
-            </div>
-          </div>
 
-          <h3 class="dash-title" style="margin-top: 20px;">Heuristics & Prediction</h3>
-          <div class="stats-grid grid-4">
-            <div class="stat-card">
-              <div class="stat-label">Monotonicity Score</div>
-              <div class="stat-value" id="g2048-mono">0.0</div>
+            <div class="stat-card" style="grid-column: 1 / -1; border-color: #f1c40f;">
+                <div class="stat-label" style="color: #f1c40f;">EVOLUTION HISTORY (10 THẾ HỆ GẦN NHẤT)</div>
+                <div class="chart-container" style="height: 220px;"><canvas id="chart-flappy-history"></canvas></div>
             </div>
-            <div class="stat-card">
-              <div class="stat-label">Smoothness Score</div>
-              <div class="stat-value" id="g2048-smooth">0.0</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Predicted EV</div>
-              <div class="stat-value" id="g2048-ev">0.0</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">EV Prediction Error</div>
-              <div class="stat-value" id="g2048-ev-err">±0.00</div>
-            </div>
-          </div>
-          
-          <div class="stat-card" style="margin-top: 20px;">
-            <div class="stat-label">Tỉ lệ Đạt Mốc Ô Số</div>
-            <div class="distribution-row"><span class="d-label">Ô 1024</span><div class="d-bar"><div class="d-fill w" id="g2048-1024" style="width: 0%;"></div></div><span id="txt-g-1024">0%</span></div>
-            <div class="distribution-row"><span class="d-label">Ô 2048</span><div class="d-bar"><div class="d-fill d" id="g2048-2048" style="width: 0%;"></div></div><span id="txt-g-2048">0%</span></div>
-            <div class="distribution-row"><span class="d-label">Ô 4096</span><div class="d-bar"><div class="d-fill l" id="g2048-4096" style="width: 0%;"></div></div><span id="txt-g-4096">0%</span></div>
-          </div>
         </div>
 
-        <div class="intro-actions" style="margin-top: 20px;">
-          <button class="btn-secondary" id="btn-back-hub-stats">Ngắt kết nối</button>
+        <div id="stats-2048" class="stats-grid grid-3 hidden">
+            <div class="stat-card">
+                <div class="stat-label">TỈ LỆ CHẠM MỐC Ô SỐ</div>
+                <div class="chart-container"><canvas id="chart-2048-tiles"></canvas></div>
+            </div>
+            <div class="stat-card" style="border-color: #00f3ff;">
+                <div class="stat-label" style="color: #00f3ff;">HEURISTICS METRICS</div>
+                <p>Tổng số ván chơi: <b id="g-games">0</b></p>
+                <p>Điểm TB cuối cùng: <b id="g-avg">0</b></p>
+                <p>Số ô trống TB: <b id="g-empty">0</b></p>
+                <p>Tính Đơn điệu (Mono): <b id="g-mono">0</b></p>
+                <p>Độ mượt (Smooth): <b id="g-smooth">0</b></p>
+            </div>
+            <div class="stat-card" style="border-color: #ff007f;">
+                <div class="stat-label" style="color: #ff007f;">EXPECTIMAX PREDICTION</div>
+                <p>Branching Factor: <b id="g-branch">0</b></p>
+                <p>Chance / Max Nodes: <b><span id="g-chance">0</span> / <span id="g-max">0</span></b></p>
+                <p>Predicted EV: <b id="g-ev" style="color: #00f3ff;">0</b></p>
+                <p>EV Prediction Error: <b style="color: #ff007f;">±<span id="g-err">0</span></b></p>
+            </div>
         </div>
       </div>
+    </main>
 
     <footer class="app-footer">
       <p>&copy; 2026 UTH Information Technology. Designed and Engineered by Team 5.</p>
