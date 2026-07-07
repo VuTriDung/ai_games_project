@@ -10,6 +10,7 @@ from pydantic import BaseModel
 import chess
 from src.ai_white import get_best_move_white
 from src.ai_black import get_best_move_black
+from src.ai_flappy import build_default_flappy_payload, load_flappy_model, save_flappy_model as save_flappy_model_file
 import joblib
 import numpy as np
 import random
@@ -23,29 +24,11 @@ FLAPPY_MODEL_PATH = DATA_DIR / "flappy_model.json"
 
 
 def _load_flappy_model():
-    default_payload = {
-        "weights": [],
-        "generation": 1,
-        "best_score": 0,
-        "all_time_best": 0,
-    }
-
-    if not FLAPPY_MODEL_PATH.exists():
-        _save_flappy_model(default_payload)
-        return default_payload
-
-    try:
-        with open(FLAPPY_MODEL_PATH, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except Exception:
-        _save_flappy_model(default_payload)
-        return default_payload
+    return load_flappy_model(FLAPPY_MODEL_PATH)
 
 
 def _save_flappy_model(payload: dict):
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-    with open(FLAPPY_MODEL_PATH, "w", encoding="utf-8") as f:
-        json.dump(payload, f, ensure_ascii=False, indent=2)
+    return save_flappy_model_file(payload, FLAPPY_MODEL_PATH)
 
 app = FastAPI()
 
