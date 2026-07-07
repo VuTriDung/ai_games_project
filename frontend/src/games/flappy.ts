@@ -4,7 +4,6 @@ import { realStats, saveTelemetry } from '../dashboard';
 
 // ============================================================
 //  FLAPPY BIRD — GENETIC ALGORITHM
-//  Dán vào file .ts của bạn, gọi: startFlappyGA('canvas-id')
 // ============================================================
 
 // ── Helpers ──────────────────────────────────────────────────
@@ -24,7 +23,7 @@ interface Config {
 }
 
 const cfg: Config = {
-  population:   1,
+  population:   100, // Tăng lên 100 để nhìn hiệu ứng bầy đàn cho đẹp
   mutationRate: 0.15,
   speed:        2,
   eliteRatio:   0.2,
@@ -59,7 +58,6 @@ const GAP      = 130;
 const PIPE_SPD = 2.3;
 
 // ── NeuralNet ─────────────────────────────────────────────────
-// 6 trọng số: dy, dist, vel, bias, gapCenter, vel²·sign
 class NeuralNet {
   w: number[];
 
@@ -67,7 +65,6 @@ class NeuralNet {
     this.w = weights ? [...weights] : Array.from({ length: 6 }, () => randn() * 1.5);
   }
 
-  /** true = nhảy */
   forward(dy: number, dist: number, vel: number, gapCenter: number): boolean {
     return (
       this.w[0] * dy +
@@ -103,12 +100,10 @@ class Pipe {
   draw(ctx: CanvasRenderingContext2D): void {
     const { x, gapY } = this;
 
-    // Bóng
     ctx.fillStyle = 'rgba(0,0,0,0.15)';
     ctx.fillRect(x + 4, 0,         PIPE_W, gapY);
     ctx.fillRect(x + 4, gapY + GAP, PIPE_W, H - gapY - GAP);
 
-    // Thân ống
     const g = ctx.createLinearGradient(x, 0, x + PIPE_W, 0);
     g.addColorStop(0,   '#4caf50');
     g.addColorStop(0.4, '#66bb6a');
@@ -117,12 +112,10 @@ class Pipe {
     ctx.fillRect(x, 0,         PIPE_W, gapY);
     ctx.fillRect(x, gapY + GAP, PIPE_W, H - gapY - GAP);
 
-    // Miệng ống
     ctx.fillStyle = '#388e3c';
     ctx.fillRect(x - 5, gapY - 18,       PIPE_W + 10, 20);
     ctx.fillRect(x - 5, gapY + GAP - 2,  PIPE_W + 10, 20);
 
-    // Highlight
     ctx.fillStyle = 'rgba(255,255,255,0.12)';
     ctx.fillRect(x + 6, 0,         8, gapY);
     ctx.fillRect(x + 6, gapY + GAP, 8, H - gapY - GAP);
@@ -162,7 +155,6 @@ class Bird {
 
     if (this.y - BIRD_R < 0 || this.y + BIRD_R > H) { this.alive = false; return; }
 
-    // Ống gần nhất phía trước
     let near: Pipe | null = null;
     let nearDist = Infinity;
     for (const p of pipes) {
@@ -175,7 +167,6 @@ class Bird {
       if (this.net.forward((this.y - gc) / H, nearDist / W, this.vy / 10, gc / H)) {
         this.vy = JUMP;
       }
-      // Va chạm
       if (BIRD_X + BIRD_R > near.x && BIRD_X - BIRD_R < near.x + PIPE_W) {
         if (this.y - BIRD_R < near.gapY || this.y + BIRD_R > near.gapY + GAP) {
           this.alive = false; return;
@@ -185,6 +176,11 @@ class Bird {
 
     this.score++;
     this.fitness = this.score;
+
+    // HARD CAP: Tránh việc chim bất tử làm treo game vĩnh viễn
+    if (this.score > 40000) {
+        this.alive = false;
+    }
   }
 
   draw(ctx: CanvasRenderingContext2D): void {
@@ -193,22 +189,18 @@ class Bird {
     ctx.translate(BIRD_X, this.y);
     ctx.rotate((this.angle * Math.PI) / 180);
 
-    // Thân
     ctx.fillStyle = this.color;
     ctx.beginPath(); ctx.ellipse(0, 0, BIRD_R, BIRD_R - 2, 0, 0, Math.PI * 2); ctx.fill();
 
-    // Cánh
     const wf = Math.sin(this.wingAnim * 0.25) * 5;
     ctx.beginPath(); ctx.ellipse(-4, wf, 9, 5, -0.4, 0, Math.PI * 2); ctx.fill();
     ctx.strokeStyle = 'rgba(0,0,0,0.2)'; ctx.lineWidth = 1; ctx.stroke();
 
-    // Mắt
     ctx.fillStyle = 'white';
     ctx.beginPath(); ctx.arc(5, -3, 5, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = '#111';
     ctx.beginPath(); ctx.arc(6, -3, 2.5, 0, Math.PI * 2); ctx.fill();
 
-    // Mỏ
     ctx.fillStyle = '#f5a623';
     ctx.beginPath();
     ctx.moveTo(BIRD_R - 1, 0); ctx.lineTo(BIRD_R + 8, 2); ctx.lineTo(BIRD_R - 1, 5);
@@ -253,15 +245,6 @@ function drawBackground(ctx: CanvasRenderingContext2D): void {
 }
 
 // ── Main entry ────────────────────────────────────────────────
-/**
- * Khởi động Flappy Bird GA trên một <canvas> có sẵn.
- *
- * @param canvasId   - id của thẻ <canvas> trong HTML của bạn
- * @param onLog      - callback nhận log text (tuỳ chọn)
- * @param onStats    - callback nhận stats mỗi frame (tuỳ chọn)
- * @param initialNets - mạng neural để bắt đầu (tuỳ chọn, nếu không thì random)
- * @param initialAllTimeBest - best score từ lần chơi trước (tuỳ chọn)
- */
 export function startFlappyGA(
   canvasId: string,
   onLog?:   (msg: string) => void,
@@ -308,10 +291,11 @@ export function startFlappyGA(
     const best    = bestBird.fitness;
     const avg     = Math.round(birds.reduce((s, b) => s + b.fitness, 0) / birds.length);
 
-    // TRACKING TELEMETRY (Cập nhật điểm)
+    // CHỐT TELEMETRY KHI CẢ ĐÀN CHẾT TỰ NHIÊN
     realStats.flappy.bestScore = Math.max(realStats.flappy.bestScore, best);
     realStats.flappy.avgGenScore = avg;
-    realStats.flappy.fitnessBest = bestBird.fitness * 50; // Tính điểm Fitness
+    realStats.flappy.survivalTime = +(frame / 60).toFixed(1);
+    saveTelemetry(); // Chỉ gọi lúc Evolve, tránh spam API
 
     if (best > allTimeBest) {
       allTimeBest = best;
@@ -329,7 +313,6 @@ export function startFlappyGA(
   function tick(): void {
     frame++;
 
-    // Sinh ống mới
     if (pipes.length < 4) {
       const lastX = Math.max(...pipes.map(p => p.x));
       if (lastX < W + 200) pipes.push(new Pipe(lastX + 250 + Math.random() * 80));
@@ -355,7 +338,6 @@ export function startFlappyGA(
     for (const p of pipes) p.draw(ctx);
     for (const b of birds) b.draw(ctx);
 
-    // HUD nhanh
     const alive = birds.filter(b => b.alive).length;
     ctx.fillStyle = 'rgba(0,0,0,0.45)';
     ctx.fillRect(6, 6, 360, 28);
@@ -366,7 +348,6 @@ export function startFlappyGA(
     animId = requestAnimationFrame(loop);
   }
 
-  // Khởi động - khởi tạo ngay lập tức để vẽ được
   if (initialNets && initialNets.length > 0) {
     initPop(initialNets);
     log('💾 Dùng dữ liệu đã lưu để tiếp tục tiến hóa');
@@ -376,14 +357,27 @@ export function startFlappyGA(
   }
   loop();
 
-  // Trả về hàm cleanup để dừng khi cần
-  return () => cancelAnimationFrame(animId);
+  // FIX: KHI NGƯỜI DÙNG BẤM TẮT MÀ CHIM CHƯA CHẾT -> CHỐT LUÔN ĐIỂM
+  return () => {
+    const sorted = [...birds].sort((a, b) => b.fitness - a.fitness);
+    if (sorted.length > 0) {
+        const bestBird = sorted[0];
+        const best = bestBird.fitness;
+        const avg = Math.round(birds.reduce((s, b) => s + b.fitness, 0) / birds.length);
+
+        realStats.flappy.bestScore = Math.max(realStats.flappy.bestScore, best);
+        realStats.flappy.avgGenScore = avg;
+        realStats.flappy.survivalTime = +(frame / 60).toFixed(1);
+        
+        if (best > allTimeBest) {
+            void saveFlappyWeights(bestBird.net.w, generation, best, best);
+        }
+        saveTelemetry(); // Lưu phát cuối
+    }
+    cancelAnimationFrame(animId);
+  };
 }
 
-// ── API điều khiển (tuỳ chọn dùng) ──────────────────────────
-export function setSpeed(v: number): void        { cfg.speed        = v; }
-export function setPopulation(v: number): void   { cfg.population   = v; }
-export function setMutationRate(v: number): void { cfg.mutationRate = v; }
 
 // ── UI integration ─────────────────────────────────────────
 let activeFlappyStop: (() => void) | null = null;
@@ -397,12 +391,10 @@ function updateFlappyStats(generation: number, alive: number): void {
   setTextById('flappy-gen', generation.toString());
   setTextById('flappy-alive', `${alive}/${cfg.population}`);
   
-  // TRACKING TELEMETRY (Bắn data vào Dashboard)
+  // Chỉ set Memory DOM, KHÔNG GỌI saveTelemetry() TẠI ĐÂY NỮA
   realStats.flappy.generations = generation;
   realStats.flappy.jumpRate = 1.2 + Math.random() * 0.5;
   realStats.flappy.geneticDiversityStdDev = 0.15 + (Math.random() * 0.05);
-  
-  saveTelemetry(); 
 }
 
 function setFlappyStatus(message: string): void {
@@ -413,7 +405,6 @@ async function startFlappyRun(): Promise<void> {
   activeFlappyStop?.();
   setFlappyStatus('Tải dữ liệu...');
   
-  // Tải dữ liệu lưu trước nếu có
   let initialNets: NeuralNet[] | null = null;
   let initialAllTimeBest = 0;
   try {
@@ -448,7 +439,10 @@ document.getElementById('btn-start-flappy')?.addEventListener('click', () => {
 });
 
 document.getElementById('btn-exit-flappy')?.addEventListener('click', () => {
-  activeFlappyStop?.();
+  if (activeFlappyStop) {
+      setFlappyStatus('Đang tổng hợp dữ liệu Tiến hóa...');
+      activeFlappyStop(); // Gọi hàm cleanup đã được vá
+  }
   activeFlappyStop = null;
   showView('hub');
   setFlappyStatus('Chờ bắt đầu...');

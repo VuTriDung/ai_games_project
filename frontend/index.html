@@ -195,16 +195,19 @@
             <div class="stat-card" style="border-color: #00f3ff;">
                 <div class="stat-label" style="color: #00f3ff;">HEURISTICS: MINIMAX (TRẮNG)</div>
                 <p>Nodes đã duyệt: <b id="c-w-nodes">0</b></p>
-                <p>Thời gian/Nước: <b id="c-w-time">0</b> ms</p>
+                <p>Thời gian TB/Nước: <b id="c-w-time">0</b> ms</p>
                 <p>Max Depth: <b id="c-w-depth">0</b></p>
-                <p>Tỉ lệ cắt tỉa: <b id="c-w-prun">0</b>%</p>
+                <p>Tỉ lệ cắt tỉa A-B: <b id="c-w-prun">0</b>%</p>
+                <p>Phương sai Heuristic: <b id="c-w-var">0</b></p>
+                <p>Độ chính xác Heuristic: <b id="c-w-hacc">0</b>%</p>
             </div>
             <div class="stat-card" style="border-color: #ff007f;">
                 <div class="stat-label" style="color: #ff007f;">PREDICTION: MLP (ĐEN)</div>
                 <p>Cross-Entropy Loss: <b id="c-b-loss">0</b></p>
                 <p>Softmax Confidence: <b id="c-b-conf">0</b>%</p>
                 <p>Độ trễ AI (Latency): <b id="c-b-time">0</b> ms</p>
-                <p>Độ chính xác: <b id="c-b-acc">0</b>%</p>
+                <p>Độ chính xác (Accuracy): <b id="c-b-acc">0</b>%</p>
+                <p>Sai số dự đoán (VPE): <b id="c-b-vpe">0</b></p>
             </div>
         </div>
 
@@ -212,17 +215,24 @@
             <div class="stat-card">
                 <div class="stat-label">PHÂN TÍCH TỬ VONG</div>
                 <div class="chart-container"><canvas id="chart-snake-death"></canvas></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">HÀNH VI DI CHUYỂN</div>
-                <div class="chart-container"><canvas id="chart-snake-dir"></canvas></div>
+                <p style="margin-top: 15px;">Phân bổ Hướng đi:</p>
+                <div class="chart-container" style="height: 180px;"><canvas id="chart-snake-dir"></canvas></div>
             </div>
             <div class="stat-card" style="border-color: #f1c40f;">
-                <div class="stat-label" style="color: #f1c40f;">Q-LEARNING PREDICTION</div>
+                <div class="stat-label" style="color: #f1c40f;">Q-LEARNING METRICS</div>
+                <p>Số Episode (Games): <b id="s-games">0</b></p>
                 <p>Điểm TB/Ván: <b id="s-avg-score">0</b></p>
+                <p>Kỷ lục (Best Score): <b id="s-best">0</b></p>
+                <p>Độ phủ không gian: <b id="s-cov">0</b>%</p>
+                <p>Tổng Táo đã ăn: <b id="s-food">0</b></p>
+                <p>Tổng Số bước (Steps): <b id="s-steps">0</b></p>
+            </div>
+            <div class="stat-card" style="border-color: #00ff00;">
+                <div class="stat-label" style="color: #00ff00;">ALGORITHM PREDICTION</div>
                 <p>Sai số (TD-Error): <b id="s-td">0</b></p>
                 <p>Avg Max Q-Value: <b id="s-q">0</b></p>
                 <p>Khám phá (Epsilon): <b id="s-eps">0</b></p>
+                <p>Heuristic Reward Shape: <b id="s-hr">0</b></p>
             </div>
         </div>
 
@@ -234,14 +244,19 @@
             <div class="stat-card" style="border-color: #e74c3c;">
                 <div class="stat-label" style="color: #e74c3c;">HEURISTICS: MINIMAX (ĐỎ)</div>
                 <p>Nước đi TB/Win: <b id="c4-r-moves">0</b></p>
-                <p>Thời gian suy nghĩ: <b id="c4-r-time">0</b> ms</p>
-                <p>Cache Hits: <b id="c4-r-hit">0</b></p>
+                <p>Thời gian suy nghĩ TB: <b id="c4-r-time">0</b> ms</p>
+                <p>Bảng hoán vị (Hits): <b id="c4-r-hit">0</b></p>
+                <p>Pattern 2 (Pat2): <b id="c4-r-p2">0</b></p>
+                <p>Pattern 3B / 3O: <b><span id="c4-r-p3b">0</span> / <span id="c4-r-p3o">0</span></b></p>
+                <p>Tỉ lệ lật (Flip Rate): <b id="c4-r-flip">0</b>%</p>
             </div>
             <div class="stat-card" style="border-color: #f1c40f;">
                 <div class="stat-label" style="color: #f1c40f;">PREDICTION: MCTS (VÀNG)</div>
+                <p>Tổng ván thi đấu: <b id="c4-y-games">0</b></p>
                 <p>Tổng Simulations: <b id="c4-y-sim">0</b></p>
                 <p>Tổng Node sinh ra: <b id="c4-y-node">0</b></p>
                 <p>Chỉ số UCB1: <b id="c4-y-ucb">0</b></p>
+                <p>Tỉ lệ Khám phá: <b id="c4-y-exp">0</b>%</p>
             </div>
         </div>
 
@@ -249,28 +264,39 @@
             <div class="stat-card">
                 <div class="stat-label">TIẾN HÓA QUẦN THỂ</div>
                 <p style="font-size: 40px; color: #00f3ff; font-weight: bold; text-align: center; margin: 20px 0;" id="f-gen">Gen 0</p>
+                <p>Cá thể sống sót: <b id="f-alive" style="color: #ff007f;">0</b></p>
+                <p>Thời gian sinh tồn: <b id="f-surv">0</b> s</p>
             </div>
             <div class="stat-card">
-                <div class="stat-label">ĐIỂM SỐ & CHỌN LỌC</div>
+                <div class="stat-label">ĐIỂM SỐ CHỌN LỌC</div>
                 <p>Kỷ lục (Best Score): <b id="f-best" style="color: #00ff00;">0</b></p>
                 <p>Điểm TB Thế hệ: <b id="f-avg">0</b></p>
             </div>
             <div class="stat-card" style="border-color: #00ff00;">
                 <div class="stat-label" style="color: #00ff00;">GENETIC PREDICTIONS</div>
                 <p>Đa dạng Gen (StdDev): <b id="f-div">0</b></p>
-                <p>Tần suất nhảy: <b id="f-jump">0</b></p>
+                <p>Tỉ lệ Đột biến (Mutation): <b id="f-mut">0</b>%</p>
+                <p>Tần suất nhảy (Jump): <b id="f-jump">0</b>%</p>
             </div>
         </div>
 
-        <div id="stats-2048" class="stats-grid grid-2 hidden">
+        <div id="stats-2048" class="stats-grid grid-3 hidden">
             <div class="stat-card">
                 <div class="stat-label">TỈ LỆ CHẠM MỐC Ô SỐ</div>
                 <div class="chart-container"><canvas id="chart-2048-tiles"></canvas></div>
             </div>
+            <div class="stat-card" style="border-color: #00f3ff;">
+                <div class="stat-label" style="color: #00f3ff;">HEURISTICS METRICS</div>
+                <p>Tổng số ván chơi: <b id="g-games">0</b></p>
+                <p>Điểm TB cuối cùng: <b id="g-avg">0</b></p>
+                <p>Số ô trống TB: <b id="g-empty">0</b></p>
+                <p>Tính Đơn điệu (Mono): <b id="g-mono">0</b></p>
+                <p>Độ mượt (Smooth): <b id="g-smooth">0</b></p>
+            </div>
             <div class="stat-card" style="border-color: #ff007f;">
-                <div class="stat-label" style="color: #ff007f;">EXPECTIMAX HEURISTICS</div>
+                <div class="stat-label" style="color: #ff007f;">EXPECTIMAX PREDICTION</div>
                 <p>Branching Factor: <b id="g-branch">0</b></p>
-                <p>Chance / Max Nodes: <b><span id="g-chance">0</span> : <span id="g-max">0</span></b></p>
+                <p>Chance / Max Nodes: <b><span id="g-chance">0</span> / <span id="g-max">0</span></b></p>
                 <p>Predicted EV: <b id="g-ev" style="color: #00f3ff;">0</b></p>
                 <p>EV Prediction Error: <b style="color: #ff007f;">±<span id="g-err">0</span></b></p>
             </div>
