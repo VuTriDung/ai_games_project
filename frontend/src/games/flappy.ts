@@ -1,7 +1,6 @@
 import { showView, API_BASE_URL } from '../main';
 import { realStats, saveTelemetry } from '../dashboard';
 
-
 // ============================================================
 //  FLAPPY BIRD — GENETIC ALGORITHM
 // ============================================================
@@ -23,7 +22,7 @@ interface Config {
 }
 
 const cfg: Config = {
-  population:   100, // Tăng lên 100 để nhìn hiệu ứng bầy đàn cho đẹp
+  population:   100, 
   mutationRate: 0.15,
   speed:        2,
   eliteRatio:   0.2,
@@ -177,7 +176,6 @@ class Bird {
     this.score++;
     this.fitness = this.score;
 
-    // HARD CAP: Tránh việc chim bất tử làm treo game vĩnh viễn
     if (this.score > 40000) {
         this.alive = false;
     }
@@ -251,7 +249,7 @@ export function startFlappyGA(
   onStats?: (s: { generation: number; alive: number; best: number; allTimeBest: number }) => void,
   initialNets?: NeuralNet[] | null,
   initialAllTimeBest?: number
-): () => void {
+): () => Promise<void> {
 
   const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
   if (!canvas) throw new Error(`Canvas #${canvasId} không tìm thấy`);
@@ -291,11 +289,13 @@ export function startFlappyGA(
     const best    = bestBird.fitness;
     const avg     = Math.round(birds.reduce((s, b) => s + b.fitness, 0) / birds.length);
 
-    // CHỐT TELEMETRY KHI CẢ ĐÀN CHẾT TỰ NHIÊN
-    realStats.flappy.bestScore = Math.max(realStats.flappy.bestScore, best);
+    const prevAvg = realStats.flappy.overallAvg || 0;
+    realStats.flappy.overallAvg = prevAvg + (avg - prevAvg) / generation;
+
+    realStats.flappy.generations = generation;
+    realStats.flappy.bestScore = best;
     realStats.flappy.avgGenScore = avg;
     realStats.flappy.survivalTime = +(frame / 60).toFixed(1);
-    saveTelemetry(); // Chỉ gọi lúc Evolve, tránh spam API
 
     if (best > allTimeBest) {
       allTimeBest = best;
@@ -304,6 +304,16 @@ export function startFlappyGA(
     } else {
       log(`⚡ Gen ${generation} → best=${best} | avg=${avg}`);
     }
+    
+    realStats.flappy.allTimeBest = allTimeBest;
+
+    if (!realStats.flappy.history) realStats.flappy.history = [];
+    realStats.flappy.history.push({ gen: generation, best: best, avg: avg });
+    if (realStats.flappy.history.length > 10) {
+        realStats.flappy.history.shift(); 
+    }
+
+    saveTelemetry(); // Lưu lên JSON khi thế hệ CHẾT THẬT SỰ
 
     const nets = evolvePopulation(birds);
     generation++;
@@ -357,22 +367,29 @@ export function startFlappyGA(
   }
   loop();
 
-  // FIX: KHI NGƯỜI DÙNG BẤM TẮT MÀ CHIM CHƯA CHẾT -> CHỐT LUÔN ĐIỂM
-  return () => {
+  // FIX LỖI ĐỒNG BỘ: Chuyển hàm cleanup thành async để đợi quá trình POST dữ liệu hoàn tất
+  return async () => {
+    running = false;
     const sorted = [...birds].sort((a, b) => b.fitness - a.fitness);
-    if (sorted.length > 0) {
+    
+    if (sorted.length > 0 && frame > 0) {
         const bestBird = sorted[0];
         const best = bestBird.fitness;
-        const avg = Math.round(birds.reduce((s, b) => s + b.fitness, 0) / birds.length);
 
-        realStats.flappy.bestScore = Math.max(realStats.flappy.bestScore, best);
-        realStats.flappy.avgGenScore = avg;
-        realStats.flappy.survivalTime = +(frame / 60).toFixed(1);
-        
         if (best > allTimeBest) {
+            allTimeBest = best;
             void saveFlappyWeights(bestBird.net.w, generation, best, best);
+            realStats.flappy.allTimeBest = allTimeBest;
+            realStats.flappy.bestScore = Math.max(realStats.flappy.bestScore, best);
         }
-        saveTelemetry(); // Lưu phát cuối
+        
+        // CHỈ LƯU LẠI THẾ HỆ ĐÃ HOÀN THÀNH. Nếu đang chạy Gen 3 mà ngắt, ghi nhận là Gen 2
+        const completedGen = generation > 1 ? generation - 1 : 1;
+        realStats.flappy.generations = completedGen;
+
+        // Bỏ qua hoàn toàn việc nhét Gen đang chạy dở vào History để không làm hỏng biểu đồ!
+        
+        await saveTelemetry(); // Dừng hệ thống, đảm bảo File JSON được ghi xong xuôi
     }
     cancelAnimationFrame(animId);
   };
@@ -380,7 +397,7 @@ export function startFlappyGA(
 
 
 // ── UI integration ─────────────────────────────────────────
-let activeFlappyStop: (() => void) | null = null;
+let activeFlappyStop: (() => Promise<void> | void) | null = null;
 
 function setTextById(id: string, text: string): void {
   const element = document.getElementById(id);
@@ -391,8 +408,7 @@ function updateFlappyStats(generation: number, alive: number): void {
   setTextById('flappy-gen', generation.toString());
   setTextById('flappy-alive', `${alive}/${cfg.population}`);
   
-  // Chỉ set Memory DOM, KHÔNG GỌI saveTelemetry() TẠI ĐÂY NỮA
-  realStats.flappy.generations = generation;
+  realStats.flappy.alive = alive; // Đồng bộ số cá thể đang sống để Dashboard gọi ra được
   realStats.flappy.jumpRate = 1.2 + Math.random() * 0.5;
   realStats.flappy.geneticDiversityStdDev = 0.15 + (Math.random() * 0.05);
 }
@@ -402,7 +418,9 @@ function setFlappyStatus(message: string): void {
 }
 
 async function startFlappyRun(): Promise<void> {
-  activeFlappyStop?.();
+  if (activeFlappyStop) {
+      await activeFlappyStop();
+  }
   setFlappyStatus('Tải dữ liệu...');
   
   let initialNets: NeuralNet[] | null = null;
@@ -438,12 +456,14 @@ document.getElementById('btn-start-flappy')?.addEventListener('click', () => {
   void startFlappyRun();
 });
 
-document.getElementById('btn-exit-flappy')?.addEventListener('click', () => {
+// ÉP NÚT EXIT PHẢI CHỜ TIẾN TRÌNH LƯU JSON KẾT THÚC
+document.getElementById('btn-exit-flappy')?.addEventListener('click', async () => {
   if (activeFlappyStop) {
-      setFlappyStatus('Đang tổng hợp dữ liệu Tiến hóa...');
-      activeFlappyStop(); // Gọi hàm cleanup đã được vá
+      setFlappyStatus('Đang đồng bộ dữ liệu Tiến hóa lên Database...');
+      const stopFn = activeFlappyStop;
+      activeFlappyStop = null; 
+      await stopFn(); // Trọng tài bắt hệ thống chờ POST data xong
   }
-  activeFlappyStop = null;
   showView('hub');
   setFlappyStatus('Chờ bắt đầu...');
 });

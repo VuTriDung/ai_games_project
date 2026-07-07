@@ -260,23 +260,26 @@
             </div>
         </div>
 
-        <div id="stats-flappy" class="stats-grid grid-3 hidden">
+        <div id="stats-flappy" class="stats-grid hidden" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
             <div class="stat-card">
-                <div class="stat-label">TIẾN HÓA QUẦN THỂ</div>
-                <p style="font-size: 40px; color: #00f3ff; font-weight: bold; text-align: center; margin: 20px 0;" id="f-gen">Gen 0</p>
-                <p>Cá thể sống sót: <b id="f-alive" style="color: #ff007f;">0</b></p>
-                <p>Thời gian sinh tồn: <b id="f-surv">0</b> s</p>
+                <div class="stat-label">CURRENT GEN: <span id="f-gen-title" style="color: #00f3ff;">0</span></div>
+                <p style="font-size: 40px; color: #ff007f; font-weight: bold; text-align: center; margin: 15px 0;" id="f-alive">0/100</p>
+                <p style="text-align: center; color: #8b9bb4; border: none; padding: 0; margin-top: -10px;">Cá thể đang sống</p>
+                <p>Thời gian sinh tồn: <b id="f-surv">0.0</b> s</p>
+                <p>Tần suất nhảy (Jump): <b id="f-jump">0.0</b>%</p>
             </div>
-            <div class="stat-card">
-                <div class="stat-label">ĐIỂM SỐ CHỌN LỌC</div>
-                <p>Kỷ lục (Best Score): <b id="f-best" style="color: #00ff00;">0</b></p>
-                <p>Điểm TB Thế hệ: <b id="f-avg">0</b></p>
-            </div>
+            
             <div class="stat-card" style="border-color: #00ff00;">
-                <div class="stat-label" style="color: #00ff00;">GENETIC PREDICTIONS</div>
-                <p>Đa dạng Gen (StdDev): <b id="f-div">0</b></p>
-                <p>Tỉ lệ Đột biến (Mutation): <b id="f-mut">0</b>%</p>
-                <p>Tần suất nhảy (Jump): <b id="f-jump">0</b>%</p>
+                <div class="stat-label" style="color: #00ff00;">OVERALL METRICS (TỔNG THỂ)</div>
+                <p>Kỷ lục mọi thời đại (Best): <b id="f-all-best" style="color: #00ff00;">0</b></p>
+                <p>Điểm TB Toàn hệ thống: <b id="f-all-avg">0.0</b></p>
+                <p>Đa dạng Gen (StdDev): <b id="f-div">0.000</b></p>
+                <p>Tỉ lệ Đột biến (Mutation): <b id="f-mut">15.0</b>%</p>
+            </div>
+
+            <div class="stat-card" style="grid-column: 1 / -1; border-color: #f1c40f;">
+                <div class="stat-label" style="color: #f1c40f;">EVOLUTION HISTORY (10 THẾ HỆ GẦN NHẤT)</div>
+                <div class="chart-container" style="height: 220px;"><canvas id="chart-flappy-history"></canvas></div>
             </div>
         </div>
 

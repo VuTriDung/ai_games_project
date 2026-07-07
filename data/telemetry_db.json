@@ -62,29 +62,83 @@
   },
   "flappy": {
     "generations": 11,
-    "alive": 0,
+    "alive": 84,
     "bestScore": 40001,
-    "avgGenScore": 266,
-    "geneticDiversityStdDev": 0.1923162870184153,
+    "avgGenScore": 14653,
+    "geneticDiversityStdDev": 0.19650649688932467,
     "mutationRate": 0,
-    "jumpRate": 1.449684570826231,
-    "survivalTime": 5.6,
+    "jumpRate": 1.2567596297044956,
+    "survivalTime": 666.7,
+    "allTimeBest": 40001,
+    "overallAvg": 15719.545454545456,
+    "history": [
+      {
+        "gen": 2,
+        "best": 40001,
+        "avg": 12303
+      },
+      {
+        "gen": 3,
+        "best": 40001,
+        "avg": 11463
+      },
+      {
+        "gen": 4,
+        "best": 40001,
+        "avg": 13470
+      },
+      {
+        "gen": 5,
+        "best": 40001,
+        "avg": 13423
+      },
+      {
+        "gen": 6,
+        "best": 40001,
+        "avg": 19095
+      },
+      {
+        "gen": 7,
+        "best": 40001,
+        "avg": 19153
+      },
+      {
+        "gen": 8,
+        "best": 40001,
+        "avg": 16559
+      },
+      {
+        "gen": 9,
+        "best": 40001,
+        "avg": 18301
+      },
+      {
+        "gen": 10,
+        "best": 40001,
+        "avg": 15235
+      },
+      {
+        "gen": 11,
+        "best": 40001,
+        "avg": 14653
+      }
+    ],
     "fitnessBest": 50850,
     "selectionPressure": 0.1
   },
   "game2048": {
     "games": 22,
     "totalFinalScore": 189904,
-    "totalEmptyTiles": 51469,
+    "totalEmptyTiles": 51521,
     "reach1024": 15,
     "reach2048": 0,
     "reach4096": 0,
-    "chanceNodes": 90628,
-    "maxNodes": 18937,
-    "effectiveBranching": 2.010610959135243,
+    "chanceNodes": 90670,
+    "maxNodes": 18942,
+    "effectiveBranching": 2.630010526057009,
     "monotonicity": 0,
     "smoothness": 0,
     "predictedEV": 130,
-    "evError": 0.7967779426272066
+    "evError": 0.46710175567524903
   }
 }

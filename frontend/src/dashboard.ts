@@ -31,7 +31,9 @@ export const realStats = {
     },
     flappy: {
         generations: 0, alive: 0, bestScore: 0, avgGenScore: 0, 
-        geneticDiversityStdDev: 0, mutationRate: 0, jumpRate: 0, survivalTime: 0
+        geneticDiversityStdDev: 0, mutationRate: 0.15, jumpRate: 0, survivalTime: 0,
+        allTimeBest: 0, overallAvg: 0,
+        history: [] as { gen: number, best: number, avg: number }[]
     },
     game2048: {
         games: 0, totalFinalScore: 0, totalEmptyTiles: 0, 
@@ -168,14 +170,29 @@ export async function refreshDashboard() {
 
     // 4. CẬP NHẬT FLAPPY
     const f = realStats.flappy;
-    document.getElementById('f-gen')!.innerText = `Gen ${f.generations}`;
-    document.getElementById('f-alive')!.innerText = f.alive.toString();
+    document.getElementById('f-gen-title')!.innerText = `${f.generations}`;
+    document.getElementById('f-alive')!.innerText = `${f.alive}/100`;
     document.getElementById('f-surv')!.innerText = f.survivalTime.toFixed(1);
-    document.getElementById('f-best')!.innerText = f.bestScore.toString();
-    document.getElementById('f-avg')!.innerText = f.avgGenScore.toFixed(1);
+    document.getElementById('f-jump')!.innerText = f.jumpRate.toFixed(1);
+
+    document.getElementById('f-all-best')!.innerText = f.allTimeBest.toString();
+    document.getElementById('f-all-avg')!.innerText = f.overallAvg.toFixed(1);
     document.getElementById('f-div')!.innerText = f.geneticDiversityStdDev.toFixed(3);
     document.getElementById('f-mut')!.innerText = (f.mutationRate * 100).toFixed(1);
-    document.getElementById('f-jump')!.innerText = f.jumpRate.toFixed(1);
+
+    // Xử lý dữ liệu mảng History cho Chart.js
+    const fHistory = f.history || [];
+    const flappyLabels = fHistory.map((h: any) => `Gen ${h.gen}`);
+    const flappyBestData = fHistory.map((h: any) => h.best);
+    const flappyAvgData = fHistory.map((h: any) => h.avg);
+
+    createOrUpdateChart('chart-flappy-history', 'line', {
+        labels: flappyLabels,
+        datasets: [
+            { label: 'Điểm Kỷ Lục (Best)', data: flappyBestData, borderColor: '#00ff00', backgroundColor: 'rgba(0,255,0,0.1)', fill: true, tension: 0.3 },
+            { label: 'Điểm Trung Bình (Avg)', data: flappyAvgData, borderColor: '#00f3ff', backgroundColor: 'transparent', borderDash: [5, 5], tension: 0.3 }
+        ]
+    });
 
     // 5. CẬP NHẬT 2048
     const g = realStats.game2048;
