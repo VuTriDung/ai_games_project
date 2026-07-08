@@ -6,8 +6,12 @@ from pathlib import Path
 
 # Từ điển định giá quân cờ
 PIECE_MAP = {
-    chess.PAWN: 1, chess.KNIGHT: 3, chess.BISHOP: 3,
-    chess.ROOK: 5, chess.QUEEN: 9, chess.KING: 100
+    chess.PAWN: 1,
+    chess.KNIGHT: 3,
+    chess.BISHOP: 3,
+    chess.ROOK: 5,
+    chess.QUEEN: 9,
+    chess.KING: 100,
 }
 
 # Tự động dò đường dẫn
@@ -21,6 +25,7 @@ try:
 except Exception as e:
     HAS_MODEL = False
 
+
 def board_to_features_flat(board):
     """Trích xuất ma trận 1D cực nhanh"""
     features = np.zeros(64, dtype=int)
@@ -33,10 +38,13 @@ def board_to_features_flat(board):
             features[square] = value
     return features
 
+
 def get_best_move_black(board):
     legal_moves = list(board.legal_moves)
-    if not legal_moves: return None
-    if not HAS_MODEL: return random.choice(legal_moves)
+    if not legal_moves:
+        return None
+    if not HAS_MODEL:
+        return random.choice(legal_moves)
 
     # 1. Kiểm tra xem có nước nào ăn Vua luôn không (Nhìn thấy chiếu bí là chớp ngay)
     for move in legal_moves:
@@ -53,18 +61,18 @@ def get_best_move_black(board):
     for i, black_move in enumerate(legal_moves):
         board.push(black_move)
         white_responses = list(board.legal_moves)
-        
+
         if not white_responses:
             if board.is_checkmate():
                 board.pop()
-                return black_move # Đen thắng luôn
+                return black_move  # Đen thắng luôn
         else:
             for white_move in white_responses:
                 board.push(white_move)
                 all_features.append(board_to_features_flat(board))
                 move_indices.append(i)
                 board.pop()
-                
+
         board.pop()
 
     if not all_features:
@@ -75,10 +83,10 @@ def get_best_move_black(board):
     scores = model.predict(features_batch)
 
     # 4. Phân tích kết quả
-    black_move_scores = {i: -float('inf') for i in range(len(legal_moves))}
+    black_move_scores = {i: -float("inf") for i in range(len(legal_moves))}
     for idx, score in zip(move_indices, scores):
         if score > black_move_scores[idx]:
-            black_move_scores[idx] = score # Trắng sẽ luôn chọn nước có điểm cao nhất
+            black_move_scores[idx] = score  # Trắng sẽ luôn chọn nước có điểm cao nhất
 
     # Đen khôn ngoan chọn nước đi khiến điểm cao nhất của Trắng bị ép xuống thấp nhất
     best_move_idx = min(black_move_scores, key=black_move_scores.get)
