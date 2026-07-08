@@ -15,9 +15,30 @@ let ground: Api;
 let isAiVsAi: boolean = false;
 
 document.getElementById('card-chess')?.addEventListener('click', () => {
-    document.getElementById('intro-title')!.innerText = "AI Chess Battle";
-    document.getElementById('intro-desc')!.innerHTML = `- <b>AI Trắng:</b> Thuật toán duyệt cây Alpha-Beta (Minimax).<br>- <b>AI Đen:</b> Mạng Nơ-ron Đa Lớp (MLP Regressor).`;
+    document.getElementById('intro-title')!.innerText = "AI CHESS BATTLE";
+    document.getElementById('intro-desc')!.innerHTML = `
+        <div style="text-align: left; padding: 10px; font-size: 15px;">
+            <h4 style="color: #00f3ff; margin-bottom: 5px;">1. AI TRẮNG: MINIMAX & CẮT TỈA ALPHA-BETA</h4>
+            <p>Thuật toán <b>Minimax</b> duyệt cây không gian trạng thái, trong đó Trắng cố gắng tối đa hóa (Max) điểm số, còn Đen cố gắng tối thiểu hóa (Min). Tuy nhiên, không gian trạng thái của cờ vua là quá khổng lồ.</p>
+            <p>Do đó, hệ thống áp dụng kỹ thuật <b>Cắt tỉa Alpha-Beta</b> để loại bỏ các nhánh cây vô dụng, giúp AI đào sâu hơn với cùng tài nguyên tính toán.</p>
+            <div style="background: rgba(0,0,0,0.4); padding: 12px; border-left: 3px solid #00f3ff; font-family: monospace; margin: 10px 0; color: #fff;">
+                Điều kiện cắt tỉa: Nếu α ≥ β → Dừng duyệt nhánh hiện tại (Pruning).
+            </div>
+            
+            <h4 style="color: #ff007f; margin-top: 20px; margin-bottom: 5px;">2. AI ĐEN: MẠNG NƠ-RON ĐA LỚP (MLP)</h4>
+            <p>AI Đen không duyệt cây tương lai mà dựa vào khả năng "nhận diện mô thức" (Pattern Recognition) từ các ván cờ lịch sử. Hàm mất mát (Loss Function) được tối ưu hóa để đánh giá thế cờ tĩnh:</p>
+            <div style="background: rgba(0,0,0,0.4); padding: 12px; border-left: 3px solid #ff007f; font-family: monospace; margin: 10px 0; color: #fff;">
+                L(y, ŷ) = - Σ y_i * log(ŷ_i)<br>
+                (Mạng dự đoán xác suất thắng từ ma trận 64 ô).
+            </div>
+        </div>
+    `;
     showView('intro');
+    document.getElementById('btn-start-game')!.onclick = () => { 
+        showView('game'); 
+        if (!ground) initBoard(); 
+        resetGame(); 
+    };
 });
 
 document.getElementById('btn-start-game')?.addEventListener('click', () => { 

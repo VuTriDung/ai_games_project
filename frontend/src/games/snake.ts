@@ -11,7 +11,31 @@ let food = {x: 15, y: 10};
 let snakeScore = 0; 
 let snakeInterval: any = null;
 
-document.getElementById('card-snake')?.addEventListener('click', () => { showView('snake'); drawSnake(); });
+document.getElementById('card-snake')?.addEventListener('click', () => {
+    document.getElementById('intro-title')!.innerText = "SNAKE: Q-LEARNING";
+    document.getElementById('intro-desc')!.innerHTML = `
+        <div style="text-align: left; padding: 10px; font-size: 15px;">
+            <h4 style="color: #f1c40f; margin-bottom: 5px;">THUẬT TOÁN TABULAR Q-LEARNING</h4>
+            <p>Q-Learning là thuật toán Học tăng cường phi mô hình (Model-free). Tác tử Rắn học cách sinh tồn thông qua thử sai và cập nhật giá trị kỳ vọng của hành động vào <b>Q-Table</b> dựa trên phần thưởng.</p>
+            <p>Trạng thái (State) được mã hóa thành vector 11-bit tương đối: Mối nguy hiểm xung quanh, hướng hiện tại và vị trí thức ăn.</p>
+            
+            <h4 style="color: #00f3ff; margin-top: 15px; margin-bottom: 5px;">PHƯƠNG TRÌNH CẬP NHẬT BELLMAN:</h4>
+            <div style="background: rgba(0,0,0,0.4); padding: 12px; border-left: 3px solid #00f3ff; font-family: monospace; margin: 10px 0; color: #fff; line-height: 1.6;">
+                Q(S, A) ← Q(S, A) + α * [ R + γ * max(Q(S', A')) - Q(S, A) ]
+            </div>
+            <ul style="margin-left: 20px; margin-top: 10px; color: #e0e6ed;">
+                <li><b>α (Learning Rate):</b> Tốc độ ghi đè kiến thức mới.</li>
+                <li><b>γ (Discount Factor):</b> Sự ưu tiên phần thưởng tương lai.</li>
+                <li><b>R (Reward):</b> +10 (Ăn táo), -10 (Đâm tường/đuôi).</li>
+            </ul>
+        </div>
+    `;
+    showView('intro');
+    document.getElementById('btn-start-game')!.onclick = () => { 
+        showView('snake'); 
+        drawSnake(); 
+    };
+});
 document.getElementById('btn-exit-snake')?.addEventListener('click', () => { showView('hub'); clearInterval(snakeInterval); });
 
 function drawSnake() {
