@@ -10,7 +10,11 @@ from pydantic import BaseModel
 import chess
 from src.ai_white import get_best_move_white
 from src.ai_black import get_best_move_black
-from src.ai_flappy import build_default_flappy_payload, load_flappy_model, save_flappy_model as save_flappy_model_file
+from src.ai_flappy import (
+    build_default_flappy_payload,
+    load_flappy_model,
+    save_flappy_model as save_flappy_model_file,
+)
 import joblib
 import numpy as np
 import random
@@ -30,12 +34,13 @@ def _load_flappy_model():
 def _save_flappy_model(payload: dict):
     return save_flappy_model_file(payload, FLAPPY_MODEL_PATH)
 
+
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],       # Cho phép mọi Web truy cập
-    allow_credentials=False,   # Đổi thành False để không bị sập Server
+    allow_origins=["*"],  # Cho phép mọi Web truy cập
+    allow_credentials=False,  # Đổi thành False để không bị sập Server
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -52,9 +57,11 @@ except Exception as e:
 # === THÊM MỚI: khai báo pacman_model để tránh lỗi ===
 pacman_model = None
 
+
 class MoveRequest(BaseModel):
     fen: str
     ai_color: str
+
 
 class SnakeState(BaseModel):
     state_vector: list[int]
@@ -70,6 +77,7 @@ class FlappyModelPayload(BaseModel):
     generation: int
     best_score: int
     all_time_best: int
+
 
 # === THÊM MỚI: class Grid2048 ===
 class Grid2048(BaseModel):
@@ -122,10 +130,18 @@ def check_winner(board: List[List[int]]) -> Optional[int]:
             if r <= ROWS - 4 and all(board[r + i][c] == p for i in range(4)):
                 return p
             # diag down-right
-            if r <= ROWS - 4 and c <= COLS - 4 and all(board[r + i][c + i] == p for i in range(4)):
+            if (
+                r <= ROWS - 4
+                and c <= COLS - 4
+                and all(board[r + i][c + i] == p for i in range(4))
+            ):
                 return p
             # diag up-right
-            if r >= 3 and c <= COLS - 4 and all(board[r - i][c + i] == p for i in range(4)):
+            if (
+                r >= 3
+                and c <= COLS - 4
+                and all(board[r - i][c + i] == p for i in range(4))
+            ):
                 return p
 
     if all(board[0][c] != 0 for c in range(COLS)):
@@ -179,7 +195,14 @@ def heuristic(board: List[List[int]], player: int) -> int:
 
 
 # Minimax with alpha-beta
-def minimax(board: List[List[int]], depth: int, alpha: int, beta: int, maximizing: bool, player: int) -> (int, Optional[int]):
+def minimax(
+    board: List[List[int]],
+    depth: int,
+    alpha: int,
+    beta: int,
+    maximizing: bool,
+    player: int,
+) -> (int, Optional[int]):
     winner = check_winner(board)
     if winner is not None:
         if winner == player:
@@ -196,12 +219,13 @@ def minimax(board: List[List[int]], depth: int, alpha: int, beta: int, maximizin
     best_col = None
 
     if maximizing:
-        value = -10**9
+        value = -(10**9)
         for col in moves:
             nb = apply_move(board, col, player)
             v, _ = minimax(nb, depth - 1, alpha, beta, False, player)
             if v > value:
-                value = v; best_col = col
+                value = v
+                best_col = col
             alpha = max(alpha, value)
             if alpha >= beta:
                 break
@@ -213,7 +237,8 @@ def minimax(board: List[List[int]], depth: int, alpha: int, beta: int, maximizin
             nb = apply_move(board, col, opp)
             v, _ = minimax(nb, depth - 1, alpha, beta, True, player)
             if v < value:
-                value = v; best_col = col
+                value = v
+                best_col = col
             beta = min(beta, value)
             if alpha >= beta:
                 break
@@ -255,7 +280,8 @@ def mcts(root_board: List[List[int]], ai_player: int, iterations: int = 800) -> 
                     explore = math.sqrt(2 * log_total / ch.visits)
                     score = exploit + 1.41 * explore
                 if score > best_score:
-                    best_score = score; best = ch
+                    best_score = score
+                    best = ch
             node = best
             if node.move is not None:
                 board = apply_move(board, node.move, node.player_to_move)
@@ -268,7 +294,9 @@ def mcts(root_board: List[List[int]], ai_player: int, iterations: int = 800) -> 
             moves = valid_moves(board)
             for m in moves:
                 nb = apply_move(board, m, player)
-                node.children.append(MCTSNode(nb, 1 if player == 2 else 2, parent=node, move=m))
+                node.children.append(
+                    MCTSNode(nb, 1 if player == 2 else 2, parent=node, move=m)
+                )
 
         # simulate from a random child or current node
         if node.children:
@@ -305,6 +333,7 @@ def mcts(root_board: List[List[int]], ai_player: int, iterations: int = 800) -> 
     best_child = max(root.children, key=lambda c: c.visits) if root.children else None
     return best_child.move if best_child else random.choice(valid_moves(root_board))
 
+
 import math
 
 
@@ -314,22 +343,27 @@ import math
 @app.post("/play_ai")
 def play_ai(req: MoveRequest):
     board = chess.Board(req.fen)
-    if board.is_game_over(): 
+    if board.is_game_over():
         return {"game_over": True, "result": board.result()}
-        
+
     start_time = time.time()
-    move = get_best_move_white(board) if req.ai_color == "white" else get_best_move_black(board)
+    move = (
+        get_best_move_white(board)
+        if req.ai_color == "white"
+        else get_best_move_black(board)
+    )
     inference_time = round((time.time() - start_time) * 1000, 2)
-    
+
     if move:
         board.push(move)
         return {
-            "fen": board.fen(), 
-            "move": move.uci(), 
+            "fen": board.fen(),
+            "move": move.uci(),
             "game_over": board.is_game_over(),
-            "inference_time_ms": inference_time 
+            "inference_time_ms": inference_time,
         }
     return {"error": "Không tìm thấy nước đi"}
+
 
 # ==========================================
 # 2. API RẮN SĂN MỒI
@@ -337,30 +371,38 @@ def play_ai(req: MoveRequest):
 @app.post("/play_snake")
 def play_snake(req: SnakeState):
     state_tuple = tuple(req.state_vector)
-    
+
     if state_tuple in snake_q_table:
         action = int(np.argmax(snake_q_table[state_tuple]))
     else:
-        action = 0 
-        
-    UP, DOWN, LEFT, RIGHT = {"x":0,"y":-1}, {"x":0,"y":1}, {"x":-1,"y":0}, {"x":1,"y":0}
+        action = 0
+
+    UP, DOWN, LEFT, RIGHT = (
+        {"x": 0, "y": -1},
+        {"x": 0, "y": 1},
+        {"x": -1, "y": 0},
+        {"x": 1, "y": 0},
+    )
     clock_wise = [RIGHT, DOWN, LEFT, UP]
-    
+
     idx = 0
     for i, d in enumerate(clock_wise):
         if d["x"] == req.current_dir["x"] and d["y"] == req.current_dir["y"]:
             idx = i
             break
-            
-    if action == 1: new_dir = clock_wise[(idx + 1) % 4]
-    elif action == 2: new_dir = clock_wise[(idx - 1) % 4]
-    else: new_dir = clock_wise[idx]
-    
+
+    if action == 1:
+        new_dir = clock_wise[(idx + 1) % 4]
+    elif action == 2:
+        new_dir = clock_wise[(idx - 1) % 4]
+    else:
+        new_dir = clock_wise[idx]
+
     return {"new_dir": new_dir}
 
 
-
 # ==========================================
+
 
 # 4. API PAC-MAN (DQN)
 # ==========================================
@@ -369,14 +411,15 @@ def play_pacman(req: PacmanState):
     if pacman_model is None:
         # Nếu chưa train xong, đi bừa
         return {"action": int(np.random.choice([0, 1, 2, 3]))}
-    
+
     # Đưa ma trận 16 giác quan vào Mạng Neural
     q_values = pacman_model.predict([req.state_vector])[0]
-    
+
     # Chọn nước đi có điểm Q cao nhất (0: Lên, 1: Xuống, 2: Trái, 3: Phải)
     action = int(np.argmax(q_values))
-    
+
     return {"action": action}
+
 
 # ==========================================
 # 3. API THỐNG KÊ (MỚI)
@@ -398,13 +441,16 @@ def get_flappy_model():
 
 @app.post("/api/flappy/model")
 def save_flappy_model(req: FlappyModelPayload):
-    _save_flappy_model({
-        "weights": req.weights,
-        "generation": req.generation,
-        "best_score": req.best_score,
-        "all_time_best": req.all_time_best,
-    })
+    _save_flappy_model(
+        {
+            "weights": req.weights,
+            "generation": req.generation,
+            "best_score": req.best_score,
+            "all_time_best": req.all_time_best,
+        }
+    )
     return {"saved": True, "path": str(FLAPPY_MODEL_PATH)}
+
 
 # ==========================================
 # 4. API THỐNG KÊ (TELEMETRY)
@@ -415,22 +461,27 @@ def save_flappy_model(req: FlappyModelPayload):
 def get_stats():
     chess_games = 0
     snake_episodes = 0
-    
+
     try:
-        with open("data/training_meta.txt", "r") as f: chess_games = int(f.read().strip())
-    except: pass
-    
+        with open("data/training_meta.txt", "r") as f:
+            chess_games = int(f.read().strip())
+    except:
+        pass
+
     try:
-        with open("data/snake_meta.txt", "r") as f: snake_episodes = int(f.read().strip())
-    except: pass
-    
-    epsilon = max(0.01, 1.0 * (0.99998 ** snake_episodes))
-    
+        with open("data/snake_meta.txt", "r") as f:
+            snake_episodes = int(f.read().strip())
+    except:
+        pass
+
+    epsilon = max(0.01, 1.0 * (0.99998**snake_episodes))
+
     return {
         "chess_trained_games": chess_games,
         "snake_trained_episodes": snake_episodes,
-        "snake_epsilon": round(epsilon, 4)
+        "snake_epsilon": round(epsilon, 4),
     }
+
 
 # ==========================================
 # 5. API GAME 2048 (Expectimax)
@@ -443,15 +494,23 @@ def play_2048(req: Grid2048):
     except Exception as e:
         # Fallback: random nếu có lỗi
         import random
+
         return {"direction": random.choice(["up", "down", "left", "right"])}
 
 
 # ---------------- Connect4 endpoints ----------------
-@app.post('/play_connect4/minimax')
+@app.post("/play_connect4/minimax")
 def play_connect4_minimax(req: Connect4State):
     try:
         depth = req.depth if req.depth is not None else 6
-        _, col = minimax(req.board, depth=depth, alpha=-10**9, beta=10**9, maximizing=True, player=req.ai_player)
+        _, col = minimax(
+            req.board,
+            depth=depth,
+            alpha=-(10**9),
+            beta=10**9,
+            maximizing=True,
+            player=req.ai_player,
+        )
         if col is None:
             moves = valid_moves(req.board)
             col = random.choice(moves) if moves else None
@@ -460,7 +519,7 @@ def play_connect4_minimax(req: Connect4State):
         return {"error": str(e)}
 
 
-@app.post('/play_connect4/mcts')
+@app.post("/play_connect4/mcts")
 def play_connect4_mcts(req: Connect4State):
     try:
         iterations = req.iterations if req.iterations is not None else 600
@@ -470,14 +529,14 @@ def play_connect4_mcts(req: Connect4State):
         return {"error": str(e)}
 
 
-@app.post('/api/connect4/log')
+@app.post("/api/connect4/log")
 def log_connect4(payload: dict):
     # optional: append play record to data/connect4_selfplay.jsonl
     DATA_DIR.mkdir(parents=True, exist_ok=True)
-    path = DATA_DIR / 'connect4_selfplay.jsonl'
+    path = DATA_DIR / "connect4_selfplay.jsonl"
     try:
-        with open(path, 'a', encoding='utf-8') as f:
-            f.write(json.dumps(payload, ensure_ascii=False) + '\n')
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(payload, ensure_ascii=False) + "\n")
         return {"saved": True, "path": str(path)}
     except Exception as e:
         return {"error": str(e)}
@@ -488,6 +547,7 @@ def log_connect4(payload: dict):
 # ==========================================
 TELEMETRY_PATH = DATA_DIR / "telemetry_db.json"
 
+
 @app.get("/api/telemetry")
 def get_telemetry():
     if TELEMETRY_PATH.exists():
@@ -497,7 +557,11 @@ def get_telemetry():
         except Exception:
             return {}
     return {}
+
+
 db_lock = asyncio.Lock()
+
+
 @app.post("/api/telemetry")
 async def update_telemetry(req: dict):
     # Luồng nào đến trước sẽ khóa file lại, luồng sau phải đứng chờ

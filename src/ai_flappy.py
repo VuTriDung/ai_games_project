@@ -22,7 +22,9 @@ class FlappyNeuralNet:
     """Mạng nơ-ron nhỏ dùng cho trò chơi Flappy Bird."""
 
     def __init__(self, weights: Optional[List[float]] = None):
-        self.weights = list(weights) if weights is not None else [randn() * 1.5 for _ in range(6)]
+        self.weights = (
+            list(weights) if weights is not None else [randn() * 1.5 for _ in range(6)]
+        )
 
     def forward(self, dy: float, dist: float, vel: float, gap_center: float) -> bool:
         score = (
@@ -37,8 +39,7 @@ class FlappyNeuralNet:
 
     def mutate(self, rate: float) -> "FlappyNeuralNet":
         mutated = [
-            x + randn() * 0.5 if random.random() < rate else x
-            for x in self.weights
+            x + randn() * 0.5 if random.random() < rate else x for x in self.weights
         ]
         return FlappyNeuralNet(mutated)
 
@@ -56,7 +57,9 @@ def build_default_flappy_payload() -> Dict[str, Any]:
 
 
 def load_flappy_model(path: Optional[Path] = None) -> Dict[str, Any]:
-    target_path = path or Path(__file__).resolve().parent.parent / "data" / "flappy_model.json"
+    target_path = (
+        path or Path(__file__).resolve().parent.parent / "data" / "flappy_model.json"
+    )
     if not target_path.exists():
         save_flappy_model(build_default_flappy_payload(), target_path)
         return build_default_flappy_payload()
@@ -69,8 +72,12 @@ def load_flappy_model(path: Optional[Path] = None) -> Dict[str, Any]:
         return build_default_flappy_payload()
 
 
-def save_flappy_model(payload: Dict[str, Any], path: Optional[Path] = None) -> Dict[str, Any]:
-    target_path = path or Path(__file__).resolve().parent.parent / "data" / "flappy_model.json"
+def save_flappy_model(
+    payload: Dict[str, Any], path: Optional[Path] = None
+) -> Dict[str, Any]:
+    target_path = (
+        path or Path(__file__).resolve().parent.parent / "data" / "flappy_model.json"
+    )
     target_path.parent.mkdir(parents=True, exist_ok=True)
     with target_path.open("w", encoding="utf-8") as handle:
         json.dump(payload, handle, ensure_ascii=False, indent=2)
