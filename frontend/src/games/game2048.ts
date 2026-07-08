@@ -351,10 +351,32 @@ function onKeyDown(e: KeyboardEvent) {
 }
 
 document.getElementById('card-2048')?.addEventListener('click', () => {
-    showView('2048');
-    if (!game) newGame();
-    else drawGrid();
-    canvas.focus();
+    document.getElementById('intro-title')!.innerText = "EXPECTIMAX 2048";
+    document.getElementById('intro-desc')!.innerHTML = `
+        <div style="text-align: left; padding: 10px; font-size: 15px;">
+            <h4 style="color: #ff007f; margin-bottom: 5px;">1. TÌM KIẾM KỲ VỌNG (EXPECTIMAX SEARCH)</h4>
+            <p>2048 không phải game đối kháng (Minimax), mà là môi trường có yếu tố ngẫu nhiên (sinh ra ô 2 với xác suất 90%, ô 4 với 10%). Cây quyết định bao gồm các <b>Chance Nodes</b> (Nút cơ hội). AI sẽ tối đa hóa Giá trị Kỳ vọng (Expected Value).</p>
+            <div style="background: rgba(0,0,0,0.4); padding: 12px; border-left: 3px solid #ff007f; font-family: monospace; margin: 10px 0; color: #fff;">
+                EV(s) = Σ P(c_i) * V(c_i)<br>
+                (Kỳ vọng = Tổng Xác suất xảy ra * Giá trị thế cờ)
+            </div>
+            
+            <h4 style="color: #00f3ff; margin-top: 20px; margin-bottom: 5px;">2. HÀM ĐÁNH GIÁ (EVALUATION HEURISTICS)</h4>
+            <p>Để chỉ đạo AI dồn các ô lớn vào góc, hàm Heuristic chấm điểm bàn cờ theo:</p>
+            <ul style="margin-left: 20px; margin-top: 10px; color: #e0e6ed;">
+                <li><b>Monotonicity (Tính đơn điệu):</b> Điểm cao khi hàng/cột tăng/giảm dần.</li>
+                <li><b>Smoothness (Độ mượt):</b> Phạt sự chênh lệch lớn giữa các ô kề nhau.</li>
+                <li><b>Empty Tiles (Ô trống):</b> Thưởng thêm khi bàn cờ có nhiều khoảng trống.</li>
+            </ul>
+        </div>
+    `;
+    showView('intro');
+    document.getElementById('btn-start-game')!.onclick = () => { 
+        showView('2048');
+        if (!game) newGame();
+        else drawGrid();
+        canvas.focus();
+    };
 });
 
 document.getElementById('btn-start-2048')?.addEventListener('click', () => {

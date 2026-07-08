@@ -447,8 +447,28 @@ async function startFlappyRun(): Promise<void> {
 }
 
 document.getElementById('card-flappy')?.addEventListener('click', () => {
-  showView('flappy');
-  setFlappyStatus('Chờ bắt đầu...');
+    document.getElementById('intro-title')!.innerText = "FLAPPY BIRD: NEUROEVOLUTION";
+    document.getElementById('intro-desc')!.innerHTML = `
+        <div style="text-align: left; padding: 10px; font-size: 15px;">
+            <h4 style="color: #00ff00; margin-bottom: 5px;">THUẬT TOÁN TIẾN HÓA DI TRUYỀN (GA)</h4>
+            <p>Hệ thống kết hợp Mạng Nơ-ron và Giải thuật Di truyền (Neuroevolution). Mỗi chú chim là một Mạng Nơ-ron có bộ trọng số (Weights) được xem như bộ gen (DNA).</p>
+            <p>Tiến trình chọn lọc tự nhiên:</p>
+            <ol style="margin-left: 20px; margin-top: 10px; color: #e0e6ed;">
+                <li><b>Hàm Thích nghi (Fitness):</b> Chim sống càng lâu điểm càng cao.</li>
+                <li><b>Lựa chọn (Selection):</b> Giữ lại Top cá thể xuất sắc (Elitism).</li>
+                <li><b>Đột biến (Mutation):</b> Thêm nhiễu Gauss vào trọng số mạng Nơ-ron của thế hệ con để khám phá không gian giải pháp mới.</li>
+            </ol>
+            <div style="background: rgba(0,0,0,0.4); padding: 12px; border-left: 3px solid #00ff00; font-family: monospace; margin: 10px 0; color: #fff; line-height: 1.6;">
+                W_new = W_old + ΔW<br>
+                ΔW ~ N(0, σ²) (Nhiễu phân phối chuẩn với độ lệch chuẩn σ)
+            </div>
+        </div>
+    `;
+    showView('intro');
+    document.getElementById('btn-start-game')!.onclick = () => { 
+        showView('flappy');
+        setFlappyStatus('Chờ bắt đầu...'); 
+    };
 });
 
 document.getElementById('btn-start-flappy')?.addEventListener('click', () => {

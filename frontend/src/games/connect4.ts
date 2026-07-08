@@ -11,7 +11,30 @@ let aiMode: 'minimax' | 'mcts' | null = null;
 let aiPlayer: number | null = null;
 let animating = false;
 
-document.getElementById('card-connect4')?.addEventListener('click', () => { showView('connect4'); initBoard(); draw(); });
+document.getElementById('card-connect4')?.addEventListener('click', () => {
+    document.getElementById('intro-title')!.innerText = "CONNECT 4: MCTS vs MINIMAX";
+    document.getElementById('intro-desc')!.innerHTML = `
+        <div style="text-align: left; padding: 10px; font-size: 15px;">
+            <h4 style="color: #e74c3c; margin-bottom: 5px;">1. AI ĐỎ: MINIMAX & BẢNG HOÁN VỊ</h4>
+            <p>Minimax đánh giá thế cờ tĩnh bằng cách đếm các chuỗi 2, 3 và 4 quân liên tiếp (Patterns). Để chống lại sự bùng nổ tổ hợp, AI Đỏ sử dụng <b>Transposition Table</b> để lưu (cache) kết quả của những thế cờ đã tính.</p>
+            
+            <h4 style="color: #f1c40f; margin-top: 20px; margin-bottom: 5px;">2. AI VÀNG: MONTE CARLO TREE SEARCH (MCTS)</h4>
+            <p>MCTS không cần hàm Heuristic tĩnh. Thuật toán gồm 4 bước: <i>Selection (Chọn) → Expansion (Mở rộng) → Simulation (Mô phỏng ngẫu nhiên đến cuối) → Backpropagation (Truyền ngược kết quả).</i></p>
+            <div style="background: rgba(0,0,0,0.4); padding: 12px; border-left: 3px solid #f1c40f; font-family: monospace; margin: 10px 0; color: #fff; line-height: 1.6;">
+                Công thức UCB1 (Cân bằng Khám phá & Khai thác):<br>
+                UCB1 = (w_i / n_i) + c * √(ln(N) / n_i)
+            </div>
+            <p style="font-size: 13px; color: #8b9bb4;">Trong đó: <b>w_i</b>: số trận thắng, <b>n_i</b>: số lần thăm node con, <b>N</b>: số lần thăm node cha, <b>c</b>: tham số khám phá (Exploration parameter).</p>
+        </div>
+    `;
+    showView('intro');
+    document.getElementById('btn-start-game')!.onclick = () => { 
+        showView('connect4'); 
+        initBoard(); 
+        draw(); 
+    };
+});
+
 document.getElementById('btn-start-connect4')?.addEventListener('click', () => { initBoard(); aiMode = 'minimax'; aiPlayer = 2; currentPlayer = 1; draw(); document.getElementById('connect4-status')!.innerText = 'Human vs Minimax (Yellow)'; });
 document.getElementById('btn-start-connect4-mcts')?.addEventListener('click', () => { initBoard(); aiMode = 'mcts'; aiPlayer = 2; currentPlayer = 1; draw(); document.getElementById('connect4-status')!.innerText = 'Human vs MCTS (Yellow)'; });
 document.getElementById('btn-ai-vs-ai')?.addEventListener('click', async () => { initBoard(); aiMode = 'minimax'; aiPlayer = null; currentPlayer = 1; draw(); document.getElementById('connect4-status')!.innerText = 'AI vs AI running...'; await runAIVsAI(); });
