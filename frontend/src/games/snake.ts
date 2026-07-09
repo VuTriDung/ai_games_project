@@ -12,7 +12,7 @@ let snake = [
 ];
 let snakeDir = { x: 1, y: 0 };
 let food = { x: 15, y: 10 };
-let snakeScore = 0;
+let snakeScore = 150;
 let snakeInterval: any = null;
 
 document.getElementById("card-snake")?.addEventListener("click", () => {
@@ -52,17 +52,37 @@ function drawSnake() {
   ctx.beginPath();
   ctx.arc(food.x * 25 + 12.5, food.y * 25 + 12.5, 10.5, 0, Math.PI * 2);
   ctx.fill(); // Táo Hồng Neon
+
   snake.forEach((segment, index) => {
-    ctx.fillStyle = index === 0 ? "#00f3ff" : "rgba(0, 243, 255, 0.7)"; // Rắn Cyan Neon
-    ctx.fillRect(segment.x * 25, segment.y * 25, 24, 24);
+    // (Code vẽ từng đốt thân rắn của bạn giữ nguyên)
+    ctx.fillStyle = index === 0 ? "#00f3ff" : "rgba(0, 243, 255, 0.7)";
+    ctx.fillRect(segment.x * 25 + 1, segment.y * 25 + 1, 23, 23);
   });
+
+  // ==========================================
+  // THÊM 3 DÒNG NÀY ĐỂ IN ĐIỂM THỂ LỰC LÊN GÓC TRÁI MÀN HÌNH
+  // ==========================================
+  ctx.fillStyle = "rgba(255, 255, 255, 0.7)"; // Màu chữ trắng mờ mờ
+  ctx.font = "bold 18px sans-serif";
+  ctx.fillText(`Thể lực: ${snakeScore}`, 10, 25);
 }
 
-function spawnFood() {
-  food = {
-    x: Math.floor(Math.random() * 20),
-    y: Math.floor(Math.random() * 20),
-  };
+// Hàm tạo táo đảm bảo KHÔNG bao giờ đè lên thân rắn
+function spawnFood(): { x: number; y: number } {
+  // Khởi tạo giá trị mặc định để TypeScript không báo lỗi 'undefined'
+  let newFood = { x: 0, y: 0 };
+  let isOnSnake = true;
+
+  while (isOnSnake) {
+    newFood = {
+      x: Math.floor(Math.random() * 20),
+      y: Math.floor(Math.random() * 20),
+    };
+    // Kiểm tra xem tọa độ mới có nằm trên bất kỳ đốt nào của rắn không
+    isOnSnake = snake.some((s) => s.x === newFood.x && s.y === newFood.y);
+  }
+
+  return newFood;
 }
 
 function getSnakeState() {
@@ -125,10 +145,12 @@ document.getElementById("btn-start-snake")?.addEventListener("click", () => {
     { x: 8, y: 10 },
   ];
   snakeDir = { x: 1, y: 0 };
-  snakeScore = 0;
-  spawnFood();
+  snakeScore = 150;
+  food = spawnFood();
+
   clearInterval(snakeInterval);
   document.getElementById("snake-status")!.innerText = "AI Running...";
+
   let stepsWithoutFood = 0;
 
   snakeInterval = setInterval(async () => {
@@ -165,6 +187,19 @@ document.getElementById("btn-start-snake")?.addEventListener("click", () => {
       if (coverage > realStats.snake.maxCoverage)
         realStats.snake.maxCoverage = coverage;
 
+      // 1. TRỪ ĐIỂM THỂ LỰC MỖI BƯỚC ĐI (-1)
+      snakeScore -= 1;
+
+      document.getElementById("snake-status")!.innerText =
+        `AI Running... Thể lực: ${snakeScore}`;
+      // 2. KIỂM TRA CÁC ĐIỀU KIỆN CHẾT
+      // Chết do hết điểm (chết đói)
+      if (snakeScore <= 0) {
+        realStats.snake.deathStarve++;
+        endSnakeGame("Chết: Bị đói (Hết điểm)");
+        return;
+      }
+      // Chết đâm tường
       if (
         newHead.x < 0 ||
         newHead.x >= 20 ||
@@ -175,27 +210,22 @@ document.getElementById("btn-start-snake")?.addEventListener("click", () => {
         endSnakeGame("Chết: Đâm tường");
         return;
       }
+      // Chết cắn đuôi
       if (snake.some((s) => s.x === newHead.x && s.y === newHead.y)) {
         realStats.snake.deathTail++;
         endSnakeGame("Chết: Cắn đuôi");
         return;
       }
-      if (stepsWithoutFood > 150 * snake.length) {
-        realStats.snake.deathStarve++;
-        endSnakeGame("Chết: Bị đói");
-        return;
-      }
 
       snake.unshift(newHead);
+
+      // 3. KHI ĂN TÁO ĐƯỢC THƯỞNG ĐIỂM
       if (newHead.x === food.x && newHead.y === food.y) {
-        snakeScore += 100;
-        stepsWithoutFood = 0;
+        snakeScore += 100; // Cộng thêm 100 điểm để kéo dài sự sống
         realStats.snake.foodEaten++;
-        document.getElementById("snake-score")!.innerText =
-          snakeScore.toString();
-        spawnFood();
+        food = spawnFood();
       } else {
-        snake.pop();
+        snake.pop(); // Chỉ xóa đuôi nếu không ăn táo
       }
 
       drawSnake();

@@ -159,7 +159,7 @@ def train():
         else:
             q_table = {}
     else:
-        print("[*] KHỞI TẠO NÃO RẮN MỚI TINH.")
+        print("[*] KHỞI TẠO NÃO RẮN.")
         q_table = {}
 
     episodes_to_train = target_episodes - episodes_trained

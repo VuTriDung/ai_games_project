@@ -202,7 +202,7 @@ def minimax(
     beta: int,
     maximizing: bool,
     player: int,
-) -> (int, Optional[int]):
+) -> (int, Optional[int]):  # type: ignore
     winner = check_winner(board)
     if winner is not None:
         if winner == player:

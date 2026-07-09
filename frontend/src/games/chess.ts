@@ -374,7 +374,6 @@ document.getElementById("btn-auto-ai")?.addEventListener("click", async () => {
         throw new Error("Dữ liệu lỗi");
       }
     } catch (error) {
-      // KHI QUÁ TẢI TIMEOUT, CHỐT HÒA/THẮNG LUÔN, BUNG POPUP
       processTKO();
       isAiVsAi = false;
       break;
