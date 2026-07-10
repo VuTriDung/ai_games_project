@@ -80,28 +80,33 @@ function getSnakeState() {
     pt.y >= 20 ||
     snake.some((s, i) => i !== 0 && s.x === pt.x && s.y === pt.y);
   return [
+    //Bit 1: Phía trước có cản đường không?
     (snakeDir.x === 1 && isCol({ x: head.x + 1, y: head.y })) ||
     (snakeDir.x === -1 && isCol({ x: head.x - 1, y: head.y })) ||
     (snakeDir.y === -1 && isCol({ x: head.x, y: head.y - 1 })) ||
     (snakeDir.y === 1 && isCol({ x: head.x, y: head.y + 1 }))
       ? 1
       : 0,
+    //Bit 2: Bên PHẢI của rắn có cản đường không?
     (snakeDir.y === -1 && isCol({ x: head.x + 1, y: head.y })) ||
     (snakeDir.y === 1 && isCol({ x: head.x - 1, y: head.y })) ||
     (snakeDir.x === -1 && isCol({ x: head.x, y: head.y - 1 })) ||
     (snakeDir.x === 1 && isCol({ x: head.x, y: head.y + 1 }))
       ? 1
       : 0,
+    //Bit 3: Bên TRÁI của rắn có cản đường không?
     (snakeDir.y === 1 && isCol({ x: head.x + 1, y: head.y })) ||
     (snakeDir.y === -1 && isCol({ x: head.x - 1, y: head.y })) ||
     (snakeDir.x === 1 && isCol({ x: head.x, y: head.y - 1 })) ||
     (snakeDir.x === -1 && isCol({ x: head.x, y: head.y + 1 }))
       ? 1
       : 0,
+    // Đang đi sang bên nào?
     snakeDir.x === -1 ? 1 : 0,
     snakeDir.x === 1 ? 1 : 0,
     snakeDir.y === -1 ? 1 : 0,
     snakeDir.y === 1 ? 1 : 0,
+    // Táo nằm ở bên nào so với đầu rắn?
     food.x < head.x ? 1 : 0,
     food.x > head.x ? 1 : 0,
     food.y < head.y ? 1 : 0,
@@ -174,7 +179,6 @@ document.getElementById("btn-start-snake")?.addEventListener("click", () => {
       if (coverage > realStats.snake.maxCoverage)
         realStats.snake.maxCoverage = coverage;
 
-      // 2. TRỪ ĐIỂM THỂ LỰC VÀ HIỂN THỊ LÊN UI MÀU ĐỎ
       snakeScore -= 1;
       document.getElementById("snake-score")!.innerText = snakeScore.toString();
 

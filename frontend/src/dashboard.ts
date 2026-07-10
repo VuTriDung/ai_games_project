@@ -186,30 +186,42 @@ export async function refreshDashboard() {
     ],
   });
 
-  document.getElementById("c-w-nodes")!.innerText =
-    c.w_nodesEvaluated.toLocaleString();
-  document.getElementById("c-w-time")!.innerText = c.w_totalMoves
-    ? (c.w_totalTimeMs / c.w_totalMoves).toFixed(1)
-    : "0";
-  document.getElementById("c-w-depth")!.innerText = c.w_maxDepth.toString();
-  document.getElementById("c-w-prun")!.innerText =
-    c.w_alphaBetaPruningRate.toFixed(2);
-  document.getElementById("c-w-var")!.innerText =
-    c.w_heuristicVariance.toFixed(2);
-  document.getElementById("c-w-hacc")!.innerText =
-    c.w_heuristicAccuracy.toFixed(1);
+  // Hàm hỗ trợ gán dữ liệu an toàn (tránh lỗi nếu HTML chưa có ID đó)
+  const setElement = (id: string, value: string | number) => {
+    const el = document.getElementById(id);
+    if (el) el.innerText = value.toString();
+  };
 
-  document.getElementById("c-b-loss")!.innerText =
-    c.b_crossEntropyLoss.toFixed(4);
-  document.getElementById("c-b-conf")!.innerText =
-    c.b_softmaxConfidence.toFixed(1);
-  document.getElementById("c-b-time")!.innerText = c.b_totalMoves
-    ? (c.b_inferenceTimeMs / c.b_totalMoves).toFixed(1)
-    : "0";
-  document.getElementById("c-b-acc")!.innerText =
-    c.b_predictionAccuracy.toFixed(1);
-  document.getElementById("c-b-vpe")!.innerText =
-    c.b_valuePredictionError.toFixed(3);
+  // --- THÔNG SỐ AI TRẮNG (MINIMAX) ---
+  setElement("c-w-wins", c.w_wins);
+  setElement("c-w-draws", c.w_draws);
+  setElement("c-w-losses", c.w_losses);
+  setElement("c-w-total-moves", c.w_totalMoves.toLocaleString());
+  setElement("c-w-total-time-ms", c.w_totalTimeMs.toLocaleString());
+  setElement("c-w-nodes", c.w_nodesEvaluated.toLocaleString());
+  setElement(
+    "c-w-time",
+    c.w_totalMoves ? (c.w_totalTimeMs / c.w_totalMoves).toFixed(1) : "0",
+  );
+  setElement("c-w-depth", c.w_maxDepth);
+  setElement("c-w-prun", c.w_alphaBetaPruningRate.toFixed(2));
+  setElement("c-w-var", c.w_heuristicVariance.toFixed(2));
+  setElement("c-w-hacc", c.w_heuristicAccuracy.toFixed(1));
+
+  // --- THÔNG SỐ AI ĐEN (MLP) ---
+  setElement("c-b-wins", c.b_wins);
+  setElement("c-b-draws", c.b_draws);
+  setElement("c-b-losses", c.b_losses);
+  setElement("c-b-total-moves", c.b_totalMoves.toLocaleString());
+  setElement("c-b-total-time-ms", c.b_inferenceTimeMs.toLocaleString());
+  setElement("c-b-loss", c.b_crossEntropyLoss.toFixed(4));
+  setElement("c-b-conf", c.b_softmaxConfidence.toFixed(1));
+  setElement(
+    "c-b-time",
+    c.b_totalMoves ? (c.b_inferenceTimeMs / c.b_totalMoves).toFixed(1) : "0",
+  );
+  setElement("c-b-acc", c.b_predictionAccuracy.toFixed(1));
+  setElement("c-b-vpe", c.b_valuePredictionError.toFixed(3));
 
   // 2. CẬP NHẬT SNAKE
   const s = realStats.snake;
