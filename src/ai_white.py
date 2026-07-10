@@ -3,7 +3,7 @@ import chess.engine
 import os
 import random
 
-# Trỏ tới cỗ máy Stockfish bạn vừa tải
+# Trỏ tới cỗ máy Stockfish
 STOCKFISH_PATH = "stockfish.exe"
 
 
@@ -22,6 +22,8 @@ def get_best_move_white(board):
 
     # Ép AI Trắng chỉ được phép suy nghĩ tối đa 0.5 giây, đảm bảo Web không bao giờ bị đơ
     result = engine.play(board, chess.engine.Limit(time=0.5))
+
+    # result = engine.play(board, chess.engine.Limit(depth=2))
 
     engine.quit()
     return result.move

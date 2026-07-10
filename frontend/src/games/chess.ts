@@ -347,6 +347,7 @@ document.getElementById("btn-auto-ai")?.addEventListener("click", async () => {
           realStats.chess.w_nodesEvaluated +=
             Math.floor(Math.random() * 5000) + 1000;
           realStats.chess.w_maxDepth = 6;
+          //realStats.chess.w_maxDepth = 2;
           realStats.chess.w_alphaBetaPruningRate = 40 + Math.random() * 20;
           realStats.chess.w_heuristicVariance = Math.random() * 5;
           realStats.chess.w_heuristicAccuracy = 90 + Math.random() * 8;
